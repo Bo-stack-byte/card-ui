@@ -1,0 +1,81 @@
+<hr>
+<h1>Creative Mode</h1>
+
+<p>Creative mode can absolutely create situations not yet handled by the current engine.</p>
+
+Enter the board state and press "go" underneath. Make your own down below, or use a sample
+
+<h2>Sample Scenarios</h2>
+
+<h3>Blast digivolve + block + retalation</h3>
+
+Player 2 swings in. Player 1 blast digivolves and blocks. Then Retaliation kills Player 1's digimon and overflow occurs.
+<form method=POST action=/game/set_up_board><textarea rows=20 cols=80 name=board>
+# Digimon on field are space-separated.
+
+# Digimon each Digimon is comma-separated field.
+## The first is a label for ease of use.
+## Then the list of cards.
+## Then, optionally, REST 
+
+# Each card can be identified either by its ID, or by SET-PREFIX.
+
+# Player 1 has Wargreymon out and MetalGreymon in hand
+P1:WarGreymon,ST15-Wargrey
+HAND1:ST15-Metal
+
+# Player 2 has Bakemon with Tapirmon (retaliate) ready to attack, a suspended mon, and an empty hand
+# Within a digimon, cards in a stack are comma-separated top-to-bottom.
+# Status modifier of 'REST' can appear anywhere
+
+P2:Retaliator,ST16-06,ST16-04 ST16-02,REST
+
+# One-liner to set game state: It's P2's turn, the turn number is 3, Main Phase, player has 0 memory.
+GAME:P2 T3 MAIN 1
+</textarea> <br> <input type=submit value=go /> </form>
+
+
+<h3>Garurumon Board Wipe, effect order matters</h3>
+<p>Player 1 is ready to blast digivolve and end Player 2's field.
+<p>Player 2 has zero memory, but 5 cards in hand. Can they activate their effects in the right order to wipe Player 1's
+    field and win?
+<form method=POST action=/game/set_up_board><textarea rows=20 cols=80 name=board>
+GAME:P2 T4 MAIN 0
+
+# Player 1 has a MetalGreymon that can blast digivolve and will get bonuses on redirect. They also have an Agumon.
+P1:Metal,ST15-Metal,ST15-02,ST15-01 Agumon,ST15-Agu
+HAND1:ST15-12
+
+# Player 2 has WereGarurumon on field, and just enough cards in hand to win.
+P2:ST16-WereGaruru
+HAND2:BT2-067 BT2-067 BT2-067 BT3-089 ST16-MetalGaruru
+
+# Players have some cards in deck to pull when digivolving.
+DECK1:ST15-02
+DECK2:BT3-089 BT3-089
+</textarea> <br> <input type=submit value=go /> </form>
+
+<h3>Can P1 survive to their next turn?</h3>
+
+<p>Each player has 1 card left in security, but all of player 1's mon are suspended.
+<p>Player 2 has several mon waiting to attack on their turn.
+<p>What can player 1 do to win?</p>
+<form method=POST action=/game/set_up_board><textarea rows=15 cols=60 name=board>
+SECURITY1:ST15-02
+SECURITY2:ST16-02
+P1:ST15-05,ST15-02,REST ST15-11,ST15-08,ST15-03,REST
+P2:ST16-04 ST16-05 ST16-06 ST16-07 
+# no help in player 1's deck
+DECK1:ST15-03 ST15-03 ST15-03
+HAND1:ST15-02 ST15-06 ST15-14 ST15-16
+HAND2:ST16-04 
+GAME:P1 T6 MAIN 5
+</textarea> <br> <input type=submit value=go /> </form>
+
+<h3>Make your own</h3>
+<form method=POST action=/game/set_up_board><textarea rows=15 cols=80 name=board>
+#Digimon on field are space-separated.
+#Cards in a stack are comma-separated.
+#Lines with # are comments and ignored.
+
+</textarea> <br> <input type=submit value=go /> </form>

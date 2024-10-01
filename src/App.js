@@ -1,10 +1,12 @@
 
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
+import Draggable from 'react-draggable';
 
-// If you're looking at this code, we'd love to have you join our project.
+// UI version 0.4.2
 
-//import { toast, ToastContainer } from "react-toastify";
+// If you're looking at this code, we'd love to have you join our project. 
+
 import 'react-toastify/dist/ReactToastify.css';
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -25,17 +27,30 @@ if (process.env.NODE_ENV === "development") {
 console.dir(process.env, { depth: null });
 
 const imagesContext = (_cardname) => {
-  let cardname = _cardname.split("@")[0];
+  let [cardname,s_colors] = _cardname.split("@");
+  s_colors ||= "ORANGE"
+  let colors = s_colors.split(",");
+  colors ||= ["orange"]
+  let color1 = colors[0];
+  let color2 = colors[1] || colors[0];
+
   try {
     return unsafeImagesContext(`./fd-${cardname}.png`);
   } catch (error) {
     return 'data:image/svg+xml,' + encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">
-        <rect width="200" height="300" style="fill:rgb(0,0,196);stroke-width:3;stroke:rgb(0,0,0)" />
-        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="50">
-          ${cardname}
-        </text>
-      </svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:${color1};stop-opacity:1" />
+      <stop offset="100%" style="stop-color:${color2};stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="300" style="fill:url(#grad1);stroke-width:3;stroke:rgb(0,0,0)" />
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" stroke="black" font-size="50">
+    ${cardname}
+  </text>
+</svg>
+
     `);
   }
 };
@@ -321,7 +336,7 @@ function InputBox({ onSendMessage }) {
           s.color = null;
         }
       }
-        
+
       console.log("+++");
       console.log(formState);
       let pn = 'p' + formState.pid;
@@ -375,7 +390,7 @@ function InputBox({ onSendMessage }) {
           //onSendMessage(my_json);
 
           setIsProcessing(false);
-          if (masterQueue.length == 1)       document.getElementById("send").disabled = false;
+          if (masterQueue.length == 1) document.getElementById("send").disabled = false;
           break;
         case 'gameStateChange':
           // handle game state change
@@ -439,7 +454,7 @@ function InputBox({ onSendMessage }) {
         }
       }
 
-    
+
       //    setResponse(msg); stay edelted
 
 
@@ -818,7 +833,7 @@ function fix_pile(mon) {
   mon.newstack = newstack;
 }
 
-const Field = ({ eggzone, fieldc, trash }) => {
+const Field = ({ eggzone, fieldc, trash, reveal }) => {
   //  console.log("fieldc is " + fieldc);
   // console.log(fieldc);
 
@@ -865,6 +880,39 @@ const Field = ({ eggzone, fieldc, trash }) => {
       </span>
     </span >);
 }
+
+
+const Reveal = ({ blobNames }) => {
+  //const imageSrc = imagesContext(`./cards/fd-${selectedState}.png`);
+  //
+  //  const [response, setResponse] = useState('');
+  //  console.log("blob names is " + blobNames);
+  // console.log(blobNames);
+  // console.log(JSON.stringify(blobNames));
+  if (!blobNames) return
+
+  let self = true;
+  let reveal = blobNames.cards;
+  if (!reveal) {
+  }
+
+  return (
+    <div className="reveal">
+      <table>
+        <tbody>
+          <tr>
+
+            {reveal && reveal.map((blobName, index) => (
+              <td key={uuidv4()} width="10px">
+                <Card key={uuidv4()} blobName={blobName} />
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 
 const Hand = ({ blobNames }) => {
@@ -921,6 +969,7 @@ function UserField({ place, pnum, json }) { // call with "p1" or "p2"
   let field = _json ? _json.field : null;
   let eggzone = _json ? _json.eggzone : null;
   let trash = _json ? _json.trash : null;
+  let reveal = _json ? _json.reveal : null;
   if (!_json || !field) {
     console.error("NO JSON/FIELD!");
   }
@@ -928,11 +977,21 @@ function UserField({ place, pnum, json }) { // call with "p1" or "p2"
   //  console.log("underscore json is ", _json);
 
   let f = (<div className="field">
-    <Field id={"f" + pnum} eggzone={eggzone} fieldc={field} trash={trash} /></div>);
+    <Field id={"f" + pnum} eggzone={eggzone} fieldc={field} trash={trash} reveal={reveal} /></div>);
+
+  let r = (
+    <Draggable>
+      <div className="reveal">
+        <Reveal id={pnum} blobNames={_json && _json.reveal} />
+      </div>
+    </Draggable>
+  );
+  if (_json.reveal.count == 0) r = (<span />);
+  let fr = (<div className="field-container"> {f} {r} </div>)
   let h = (<div className="hand">
     <Hand id={pnum} blobNames={_json && _json.hand} /> </div>);
 
-  if (place == "north") [f, h] = [h, f];
+  if (place == "north") [fr, h] = [h, fr];
   /*
     //  console.log("moves is ", _json.moves);
     if (_json.moves) {
@@ -942,7 +1001,7 @@ function UserField({ place, pnum, json }) { // call with "p1" or "p2"
           console.log("moves is ", jm);*/
   return (
     <div>
-      {f}
+      {fr}
       {h}
     </div>
 

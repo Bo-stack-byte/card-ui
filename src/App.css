@@ -162,9 +162,39 @@ td.rightcell {
   flex-direction: row;
 }
 
+
+.field-container {
+  position: relative;
+}
+
 .hand {
   display: flex;
   flex-direction: row;
+}
+
+
+.reveal {
+  position: absolute;
+  background-color: white;
+  top: 0;
+  left: 0;
+
+  width: 100%; /* Adjust as needed */
+  height: 100%; /* Adjust as needed */
+
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  opacity: 85%;
+  /* Adjust these values as needed to position the Reveal component correctly */
+  z-index: 1000; /* Ensure it appears on top */
+}
+
+
+.reveal > * {
+  transform: scale(1.3); /* Scale up by 100% (2x) */
 }
 
 .table {
