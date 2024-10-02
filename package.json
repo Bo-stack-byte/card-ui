@@ -19,7 +19,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && cp creative.html landing.html build/",
+    "build": "react-scripts build && cp landing.html build/landing.html",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

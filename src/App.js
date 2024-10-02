@@ -3,7 +3,7 @@ import './App.css';
 import { v4 as uuidv4 } from 'uuid';
 import Draggable from 'react-draggable';
 
-// UI version 0.4.2
+// UI version 0.4.3
 
 // If you're looking at this code, we'd love to have you join our project. 
 
