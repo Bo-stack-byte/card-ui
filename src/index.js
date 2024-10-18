@@ -1,19 +1,60 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { Suspense } from 'react';
 import './index.css';
-//import App from './AppSocket';
-import App from './App';
+import { createRoot } from 'react-dom/client';
 
-import reportWebVitals from './reportWebVitals';
+const App = React.lazy(() => import('./App'));
+const UI = React.lazy(() => import('./BACKapp'));
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+
+/*
+function renderApp() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+
+  // Render the appropriate component based on the mode
+  root.render(
+
+
+    <React.StrictMode>
+      {mode === 'visualizer' ? <Visualizer /> : <App />}
+    </React.StrictMode>
+  );
+}*/
+
+// Function to load the appropriate CSS
+function loadCSS(filename) {
+  const head = document.head;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = process.env.PUBLIC_URL + filename;
+  head.appendChild(link);
+}
+
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get('mode');
+if (mode == "backup") {
+  loadCSS('/BACKapp.css');
+  root.render(
+    <Suspense fallback={<div>Loading...</div>}>
+      <UI />
+    </Suspense>
+  );
+} else {
+  loadCSS('/App.css');
+  root.render(
+    <Suspense fallback={<div>Loading...</div>}>
+      <App />
+    </Suspense>
+  );
+}
+
+//ReactDOM.render(<Visualizer />, document.getElementById('root'));
+
+
+// renderApp();
+

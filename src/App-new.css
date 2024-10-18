@@ -1,0 +1,52 @@
+/* App.css */
+.game-field {
+  position: absolute; /* Anchored to the left edge */
+  left: 0;
+  width: 800px;
+  height: 1120px;
+  background-image: url('/background.png');
+  background-size: contain;
+  background-position: left top;
+  background-repeat: no-repeat;
+}
+
+.player-area {
+  position: absolute;
+}
+
+.player-area.bottom {
+  bottom: 0; /* Align at the bottom */
+  width: 100%; /* Full width to avoid scrolling */
+}
+
+.hand {
+  position: absolute;
+  bottom: -10%;
+  width: 500px; /* Fixed width to fit the cards in */
+  display: flex;
+  justify-content: flex-start;
+}
+
+.card2 {
+  height: 150px;
+  object-fit: cover;
+  margin-left: -40px; /* Negative margin for overlap */
+}
+
+.card {
+  width: 100px; 
+  height: 150px;
+  object-fit: cover;
+  position: absolute; /* Ensure absolute positioning */
+}
+
+
+
+.text-overlay {
+  position: absolute; /* Position the text on top */
+  top: 0; /* Align to top */
+  left: 0; /* Align to left */
+  color: white; /* Adjust color and other styles as needed */
+  z-index: 80;
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: Semi-transparent background */
+}

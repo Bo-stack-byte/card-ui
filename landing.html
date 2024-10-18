@@ -34,13 +34,13 @@
       exists.</li><img style="max-width:200px; height:auto" src="/public/images/field.png">
     <li>You can't see your security or deck, but the lengths are posted in the log at the start of each turn
     </li>
-    <li>Because ST15 versus ST16 has no interruptive effects, and those were very important to test, I made up
+    <li>Because ST15 versus ST16 has no interruptive effects, and those were very important to test, we made up
       Armormon (Agumon with Armor Purge), and then gave Matt Piercemon (Garurumon that pierces) for balance.
       OC DO
-      NOT STEAL!!1one </li>
+      NOT STEAL!!1one (Well, give credit to the Armormon artist.) </li>
   </ul>
   <h2>Got that? Great, get started!</h2>
-  <p>There is no mulligan, your opening hand may suck. <a href="#mulligan">See below</a> for why.</p>
+  <p>There is no mulligan, your opening hand may suck. Sorry.</p>
   <script>
     function buildURL() {
       const params = new URLSearchParams(window.location.search);
@@ -79,7 +79,7 @@
 
   <h2> Set your whole deck </h2>
 
-  <form method=POST action="/game/init_game">
+  <form method=POST action="/game/init_game" onsubmit="submit.disabled = true; return true;">
 
     <table>
       <tr>
@@ -111,7 +111,7 @@ ST16-16 P-PurpleMemory
     <td>
         <input type=checkbox id=bot1 name=bot1 value=1 /><label for="bot1">Player 1 is bot</label>
         <br/>
-        <input type=checkbox id=bot2 name=bot2 value=1 /><label for="bot2">Player 2 is bot</label>
+        <input type=checkbox id=bot2 name=bot2 value=1 checked /><label for="bot2">Player 2 is bot</label>
         <br/>
         <select name="launch" id="launch">
           <option value="1">Launch player 1 window</option>
@@ -119,7 +119,7 @@ ST16-16 P-PurpleMemory
           <option value="3">Go to redirect for launching both</option>      
         </select>
         <p>
-          <button type=submit value=go>GO!</button>
+          <button type=submit name=submit value=go>GO!</button>
       </tr> 
 </table>
   </form>
@@ -137,7 +137,7 @@ ST16-16 P-PurpleMemory
   <h2>Recent Changes</h2>
 
   <h2>Feedback</h2>
-  <p>On Discord for now <a href="https://discord.gg/R9bK5Y8M">invite link</a> or reach out to the team member
+  <p>On Discord for now <a href="https://discord.gg/42pgVH5x">invite link</a> or reach out to the team member
     who
     helped you</p>
   <p>Say stuff you want, there's a suggested list of requests down below</p>

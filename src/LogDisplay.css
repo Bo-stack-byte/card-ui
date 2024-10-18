@@ -1,0 +1,30 @@
+.log-container {
+    width: 400px;
+    height: 250px;
+    background-color: #fff;
+    color: #000;
+    font-family: 'VT323', 'Consolas', monospace;
+    font-size: 24px;
+    border: 1px solid #0f0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    justify-content: flex-end; /* Align content to the bottom */
+}
+
+.log-body {
+    flex: 1;
+    overflow-y: auto; /* Enable scrolling */
+    padding: 10px;
+    position: relative;
+    background: linear-gradient(to bottom, transparent, #fff); /* Adjust for fading */
+    display: flex;
+    flex-direction: column; /* Ensure normal order */
+}
+
+.log-entry {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+    margin-bottom: 5px; /* Add space between log entries */
+}
