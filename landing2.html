@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TCG Initialization</title>
+  <link rel="stylesheet" href="styles.css"> </head>
+<body>
+  <div class="container">
+    <h1>TCG Initialization</h1>
+
+    <div class="textarea-container">
+      <label for="player1-deck">Player 1 Deck:</label>
+      <textarea id="player1-deck" rows="10" cols="50"></textarea>
+      <select id="player1-deck-preset">
+        <option value="preset1">Preset 1</option>
+        <option value="preset2">Preset 2</option>
+        </select>
+      <label for="player1-bot">Player 1 is a Bot:</label>
+      <input type="checkbox" id="player1-bot">
+    </div>
+
+    <div class="textarea-container">
+      <label for="player2-deck">Player 2 Deck:</label>
+      <textarea id="player2-deck" rows="10" cols="50"></textarea>
+      <select id="player2-deck-preset">
+        <option value="preset1">Preset 1</option>
+        <option value="preset2">Preset 2</option>
+        </select>
+      <label for="player2-bot">Player 2 is a Bot:</label>
+      <input type="checkbox" id="player2-bot">
+    </div>
+
+    <div class="options-container">
+      <label for="launch-mode">Launch Mode:</label>
+      <select id="launch-mode">
+        <option value="player1">Player 1</option>
+        <option value="player2">Player 2</option>
+        <option value="both">Both</option>
+      </select>
+
+      <label for="gid">Game ID:</label>
+      <input type="text" id="gid">
+
+      <label for="random-seed">Random Seed:</label>
+      <input type="text" id="random-seed">
+    </div>
+
+    <div class="explanatory-text">
+      </div>
+  </div>
+
+  <script src="script.js"></script> </body>
+</html>

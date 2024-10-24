@@ -8,7 +8,7 @@ const Counter = ({ position }) => {
     console.log(`${y}px`);
 
     return (
-        <div className="counter" style={{ left: `${y}px`, top:"497px", zIndex:"8888" }}></div>
+        <div className="counter" style={{ left: `${y}px`, top:"497px", zIndex:"900" }}></div>
     );
 };
 

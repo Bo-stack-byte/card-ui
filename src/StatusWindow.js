@@ -33,12 +33,13 @@ export const populate_tree = (tree) => {
                         if (m = item.match(/DONE:(.*)/)) {
                             fancy.push(`<s>${m[1]}</s>`);
                         } else {
-                            fancy.push(item);                        }
-    
+                            fancy.push(item);
+                        }
+
                     }
                     output = fancy.join(", ");
                 }
-    
+
                 effects.style.display = "block";
                 document.getElementById("text" + i).innerHTML = output;
                 document.getElementById("effect" + i).style.display = "block";
@@ -61,7 +62,7 @@ export const StatusWindow = () => {
     */
     return (
         <div id={"effects"} style={{ width: '300px', position: "absolute", left: '800px', top: '120px', display: "none" }} >
-            <Draggable>
+            <Draggable cancel="touchstart">
                 <div style={{ position: 'absolute', border: '1px solid black', padding: '10px', backgroundColor: 'white' }}>
                     <table>
                         <tbody>

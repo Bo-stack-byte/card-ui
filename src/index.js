@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 const App = React.lazy(() => import('./App'));
 const UI = React.lazy(() => import('./BACKapp'));
+const TcgInitialization = React.lazy(() => import('./TcgInitialization'));
 
 
 
@@ -37,7 +38,7 @@ const container = document.getElementById('root');
 const root = createRoot(container);
 const urlParams = new URLSearchParams(window.location.search);
 const mode = urlParams.get('mode');
-if (mode == "backup") {
+if (mode === "backup") {
   loadCSS('/BACKapp.css');
   root.render(
     <Suspense fallback={<div>Loading...</div>}>
@@ -45,12 +46,19 @@ if (mode == "backup") {
     </Suspense>
   );
 } else {
-  loadCSS('/App.css');
+loadCSS('/App.css');
   root.render(
     <Suspense fallback={<div>Loading...</div>}>
       <App />
     </Suspense>
   );
+/*
+  root.render(
+    <Suspense fallback={<div>Loading...</div>}>
+      <TcgInitialization />
+    </Suspense>
+  );*/
+
 }
 
 //ReactDOM.render(<Visualizer />, document.getElementById('root'));

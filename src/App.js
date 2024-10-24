@@ -7,11 +7,12 @@ import React, { useEffect, useState } from 'react';
 import { StatusWindow, populate_tree } from './StatusWindow';
 import Counter from './Counter';
 import Draggable from 'react-draggable';
+import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 
 //import ImageComponent from "./util"
 
-// Visualizer v0.14
+// Visualizer v0.17
 
 
 const initialData = {}
@@ -41,11 +42,13 @@ function TableTop({ response }) {
   if (data && data.p1 && data.p2) {
     let pid = params.get("pid");
     let relative_memory = (pid == 1) ? data.p1.relative_memory : data.p2.relative_memory;
+    let top = (pid == 1) ? data.p2 : data.p1;
+    let bottom = (pid == 1) ? data.p1 : data.p2;
     return (
       <div>
-        <PlayerArea key={5000} player={data.p2} bottom={0} className="bottom" />
+        <PlayerArea key={5000} player={top} bottom={0} className="bottom" />
         <Counter position={relative_memory} />
-        <PlayerArea key={6000} player={data.p1} bottom={1} className="bottom" />
+        <PlayerArea key={6000} player={bottom} bottom={1} className="bottom" />
       </div>
     );
   }
@@ -106,14 +109,15 @@ const Deck = ({ pile, x, y, card, name, bottom }) => {
   let index = 1;
   return (
     <div>
-      <div className="text-overlay" value={"SIZE: " + pile.length} dangerouslySetInnerHTML={{ __html: "CARDS: " + pile.count }}
+      <div className="text-overlay" value={"SIZE: " + pile.count} dangerouslySetInnerHTML={{ __html: "CARDS:&nbsp;" + pile.count }}
         style={{
           position: 'absolute',
           left: `${x}px`,
           top: `${y}px`,
+          width: `80px`
         }}
       />
-      <Card key={uuidv4()} card={card} x={x} y={y} z={20} overlay={pile.length + " cards"} style={{ top: '80%', left: `${10 + index * 15}%` }} />
+      <Card key={uuidv4()} card={card} x={x} y={y} z={20} overlay={pile.count + " cards"} style={{ top: '80%', left: `${10 + index * 15}%`, width: `50px` }} />
     </div>
   );
 }
@@ -137,7 +141,7 @@ const Instance = ({ instance, x, y }) => {
 
   return (
     <div className="wrapper">
-      <div className="text-overlay" dangerouslySetInnerHTML={{ __html: instance.summary }}  style={{left: `${x}px`, top: `${y}px`}} />
+      <div className="text-overlay" dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, top: `${y}px` }} />
       <div className="eggzone">
         {instance.stack.map((card, index) => (
           <Card key={uuidv4()} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index == count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
@@ -238,6 +242,7 @@ function InputBox({ onSendMessage }) {
   const params = new URLSearchParams(window.location.search);
   let _pid = params.get("pid");
   let _gid = params.get("gid");
+  console.log("iput box _gid is " + _gid);
 
   const [formState, setFormState] = useState(
     {
@@ -330,7 +335,7 @@ function InputBox({ onSendMessage }) {
           `PLAYER ${status.turn_player}'S TURN ` +
           `<br> Phase ${status.phase} Turn ${status.n_turn}  <br> ` +
           ` Waiting on player ${status.control} <br>` +
-          ` Security P1: ${obj.p2.security.count} &nbsp; P2: ${obj.p2.security.count} `
+          ` Security P1: ${obj.p1.security.count} &nbsp; P2: ${obj.p2.security.count} `
         x.value = status.last_id;
         let s = document.getElementById("tick").style;
         if (status.step_text.startsWith("IN_LOOP")) {
@@ -362,6 +367,24 @@ function InputBox({ onSendMessage }) {
     }
   }
   useEffect(() => {
+
+    const updateLogs = (newLog) => {
+      setLogs(prevLogs => {
+        const updatedLogs = [...prevLogs];
+        const existingLogIndex = updatedLogs.findIndex(log => log.id === newLog.id);
+        console.log("index is " + existingLogIndex);
+        if (existingLogIndex !== -1) {
+          updatedLogs[existingLogIndex] = newLog;
+        } else {
+          updatedLogs.push(newLog);
+        }
+
+        return updatedLogs;
+      });
+    };
+
+
+
     if (masterQueue.length > 0 && !isProcessing) {
       setIsProcessing(true);
       const nextMessage = masterQueue[0];
@@ -389,6 +412,13 @@ function InputBox({ onSendMessage }) {
         case 'gameStateChange':
           setIsProcessing(false);
           break;
+        case 'fancy':
+          let fancy = nextMessage.data;
+          fancy.forEach((log, index) => {
+            updateLogs(log);
+          });
+          setIsProcessing(false);
+          break;
         default:
           console.error('Unknown message type:', nextMessage.type);
       }
@@ -398,20 +428,6 @@ function InputBox({ onSendMessage }) {
 
   const [logs, setLogs] = useState([]);
   useEffect(() => {
-    const updateLogs = (newLog) => {
-      setLogs(prevLogs => {
-        const updatedLogs = [...prevLogs];
-        const existingLogIndex = updatedLogs.findIndex(log => log.id === newLog.id);
-        console.log("index is " + existingLogIndex);
-        if (existingLogIndex !== -1) {
-          updatedLogs[existingLogIndex] = newLog;
-        } else {
-          updatedLogs.push(newLog);
-        }
-
-        return updatedLogs;
-      });
-    };
 
     let msgHandler = function (msg) {
       var obj = JSON.parse(msg);
@@ -426,11 +442,12 @@ function InputBox({ onSendMessage }) {
           }
         }
         if (obj.fancy && obj.fancy.length > 0) {
-          console.error(859786798654789);
-          console.error(obj.fancy);
-          obj.fancy.forEach((log, index) => {
-            updateLogs(log);
-          });
+          // put into queue instead of processing immediately
+          setMasterQueue(prevQueue => [...prevQueue, { "type": "fancy", "data": obj.fancy }]);
+          //      console.error(obj.fancy);
+          //          obj.fancy.forEach((log, index) => {
+          //            updateLogs(log);
+          //         });
         }
       } else {
         // console.log(obj);
@@ -506,9 +523,11 @@ function InputBox({ onSendMessage }) {
 
   };
 
+  console.log("at ted gid is " + _gid);
+
   return (
     <div>
-      <Draggable>
+      <ClickableDraggable>
         <div className="inputbox" id="unique">
           <div className="gamestate" id="status">
             Press 'SEND' or 'TICK' to start.<br />
@@ -550,7 +569,8 @@ function InputBox({ onSendMessage }) {
             id="last_id"
             size="4"
           />
-          <select multiple={formState.multiple} className="moves" id="command" value={formState.selectedValue} onChange={handleSelectChange}>
+          <select multiple={formState.multiple} className="moves" id="command"
+          value={formState.selectedValue} onChange={handleSelectChange} onTouchStart={handleSelectChange}>
             {formState && formState.selectOptions &&
               formState.selectOptions.map((option) => (
                 <option key={option.value} value={option.value} fred={option.last_id} thing1="two" >
@@ -561,21 +581,21 @@ function InputBox({ onSendMessage }) {
 
           {/*        <button type="submit">Submit</button> */}
 
-          <button id="send" onClick={sendMessage}>Send</button>
-          <button id="tick" onClick={sendTick}>Tick</button>
+          <button id="send" onClick={sendMessage} onTouchStart={sendMessage}>Send</button>
+          <button id="tick" onClick={sendTick} onTouchStart={sendTick}>Tick</button>
 
 
           {/*        {response && <p>Response: {response}</p>}
         <button>123 and {response}</button> */}
 
         </div>
-      </Draggable>
-      <Draggable>
-        <div className={`popup ${messages.length > 0 ? 'show' : 'hide'}`} onClick={handleLogClick}>
+      </ClickableDraggable>
+      <Draggable cancel="touchstart">
+      <div className={`popup ${messages.length > 0 ? 'show' : 'hide'}`} onClick={handleLogClick}>
           {messages.length > 0 && messages[0]}
         </div>
       </Draggable>
-      <LogDisplay logs={logs} />
+      <LogDisplay logs={logs} style={{ left: '1200px' }} gid={_gid} />
 
     </div>
   );

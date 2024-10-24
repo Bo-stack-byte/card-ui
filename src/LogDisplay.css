@@ -11,6 +11,14 @@
     position: relative;
     overflow: hidden;
     justify-content: flex-end; /* Align content to the bottom */
+    left: 900px; 
+
+}
+
+.log-content {
+    position: fixed;
+    overflow-y: auto; /* Enable scrolling */
+    z-index: 1001;
 }
 
 .log-body {
@@ -27,4 +35,12 @@
     opacity: 1;
     transition: opacity 0.5s ease;
     margin-bottom: 5px; /* Add space between log entries */
+}
+
+.label {
+    text-decoration: underline;
+    cursor: pointer;
+}
+.full-text {
+    display: none;
 }

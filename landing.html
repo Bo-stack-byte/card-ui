@@ -1,171 +1,159 @@
 <!DOCTYPE html>
-<html lang="en">
-
-
+<html>
 <head>
-  <meta charset="utf-8" />
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="alternate UI" />
-  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-  <title>TCG Rules Simulator 2</title>
-</head>
-
+  <title>Digi Viz Deck Setup</title>
+  <link rel="stylesheet" href="styles.css"> </head>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <body>
+  <div class="container">
+    <h1>Deck Setup</h1>
 
-
-
-  <ul>Quick start
-    <li><b>You have to press "Send" or "Tick" to first populate the game after loading the page.</b></li>
-    <li>All user-input happens in the UI box at the top.</li>
-    <li><img style="max-width:200px; height:auto" src="/public/images/choose.png"></li>
-    <li>If you need to choose something (which effect, which target, to block) it'll be in that same list.</li>
-    <li><img style="max-width:200px; height:auto" src="/public/images/mobile.png"></li>
-    <li>The game will auto-play all the rules quickly, and you'll see the endstate on the board while it pops up
-      messages saying what happened. This is probably more user-friendly than before when you had to manually
-      'tick' each step of the game.
-    <li>You may still need to press "TICK" once certain places to move the game forward. <b>Basically, if "TICK"
-        is blue, press it</b> or else answer the waiting question.</li><img style="max-width:200px; height:auto"
-      src="/public/images/tick.png">
-    <li>The egg zone will have a pixel-art background, if it exists. The trash will have a black background, if
-      it
-      exists.</li><img style="max-width:200px; height:auto" src="/public/images/field.png">
-    <li>You can't see your security or deck, but the lengths are posted in the log at the start of each turn
-    </li>
-    <li>Because ST15 versus ST16 has no interruptive effects, and those were very important to test, we made up
-      Armormon (Agumon with Armor Purge), and then gave Matt Piercemon (Garurumon that pierces) for balance.
-      OC DO
-      NOT STEAL!!1one (Well, give credit to the Armormon artist.) </li>
-  </ul>
-  <h2>Got that? Great, get started!</h2>
-  <p>There is no mulligan, your opening hand may suck. Sorry.</p>
-  <script>
-    function buildURL() {
-      const params = new URLSearchParams(window.location.search);
-      const word = params.get('word');
-
-      const baseUrl = "/build/index.html?pid=1&gid=" + word;
-      const select1 = document.getElementById("p1");
-      const select2 = document.getElementById("p2");
-
-      const option1 = select1.value;
-      const option2 = select2.value;
-
-      const url = `${baseUrl}${option1}and${option2}andbot2`;
-      window.location.href = url; // Redirect to the constructed URL
-
-    }
-  </script>
-
-  <select id="p1">
-    <option value="duke1">RED Gallantmon ST7</option>
-    <option value="vee1">BLUE Ulforceveedramon ST8</option>
-    <option value="green1">GREEN Double Typhoon ST17 only ST17 cards</option>
-    <option value="greenx1">GREEN Double Typhoon with cards outside ST17</option>
-    <option value="tai1" SELECTED>BLACK Dragon of Courage ST15</option>
-    <option value="matt1">PURPLE Wolf of Friendship ST16</option>
-  </select>
-  <select id="p2">
-    <option value="duke2">RED Gallantmon ST7</option>
-    <option value="vee2">BLUE Ulforceveedramon ST8</option>
-    <option value="green2">GREEN Double Typhoon ST17 only ST17 cards</option>
-    <option value="greenx2">GREEN Double Typhoon with cards outside ST17</option>
-    <option value="tai2">BLACK Dragon of Courage ST15</option>
-    <option value="matt2" SELECTED>PURPLE Wolf of Friendship ST16</option>
-  </select>
-  <button onclick="buildURL()">Start</button>
-
-  <h2> Set your whole deck </h2>
-
-  <form method=POST action="/game/init_game" onsubmit="submit.disabled = true; return true;">
-
-    <table>
-      <tr>
-        <td>
-          You can describe cards by card ID...<br>
-          <textarea rows=10 cols=66 name=p1string>
-ST16-01 ST16-01 ST16-01 ST16-01
-ST16-02 ST16-03 ST16-03 ST16-03 ST16-03 ST16-04 ST16-04 ST16-04
-ST16-04 ST16-05 ST16-05 ST16-05 ST16-05 ST16-06 ST16-06 ST16-06
-ST16-17 ST16-07 ST16-07 ST16-07 ST16-17 ST16-08 ST16-08 ST16-09
-ST16-09 ST16-09 ST16-09 ST16-10 ST16-10 ST16-10 ST16-10 ST16-11
-ST16-11 ST16-12 ST16-12 ST16-13 ST16-13 ST16-13 ST16-13 ST16-14
-ST16-14 ST16-14 ST16-14 ST16-15 ST16-15 ST16-16 ST16-16 ST16-16
-ST16-16 P-PurpleMemory  
-    </textarea><br>
-          Separate by whitespace or comma, either works.
-        </td>
-        <td>
-          You can also describe by set and unique prefix. Mix and match!<br>
-          <textarea rows=10 cols=60 name=p2string>
- ST18-Fluffy,ST18-Fluffy,ST18-Fluffy,ST18-Fluffy
+    <script>
+      let defaults = {};
+      
+      const st7="ST7-01 ST7-01 ST7-01 ST7-01 BT1-009 BT1-009 BT1-009 BT1-009 ST7-02 ST7-02 ST7-02 ST7-02 ST7-03 ST7-03 ST7-04 ST7-04 ST7-04 ST7-04 ST7-05 ST7-05 ST7-06 ST7-06 ST7-06 ST7-06 BT1-019 BT1-019 BT1-019 BT1-019 BT1-020 BT1-020 ST7-07 ST7-07 ST7-07 ST7-07 ST7-08 ST7-08 ST7-08 ST7-08 ST7-09 ST7-09 ST7-10 ST7-10 ST7-10 ST7-10 ST7-11 ST7-11 ST7-12 ST7-12 ST7-12 ST7-12 ST1-16 ST1-16 ST1-16 ST1-16"
+  const st8="ST8-01 ST8-01 ST8-01 ST8-01 BT1-028 BT1-028 BT1-028 BT1-028 ST8-02 ST8-02 ST8-02 ST8-02 ST8-03 ST8-03 ST8-03 ST8-03 ST8-04 ST8-04 ST8-05 ST8-05 ST8-06 ST8-06 ST8-06 ST8-06 BT1-037 BT1-037 BT1-037 BT1-037 BT1-038 BT1-038 ST8-07 ST8-07 ST8-07 ST8-07 ST8-08 ST8-08 ST8-08 ST8-08 ST8-09 ST8-09 ST8-09 ST8-09 ST8-10 ST8-10 ST2-13 ST2-13 ST8-11 ST8-11 ST8-11 ST8-11 ST8-12 ST8-12 ST8-12 ST8-12"
+  const st15="ST15-01 ST15-01 ST15-01 ST15-01 ST15-02 ST15-02 ST15-03 ST15-03 ST15-03 ST15-03 ST15-04 ST15-04 ST15-04 ST15-04 ST15-05 ST15-05 ST15-05 ST15-05 ST15-06 ST15-06 ST15-06 ST15-06 ST15-07 ST15-07 ST15-07 ST15-07 ST15-08 ST15-08 ST15-09 ST15-09 ST15-09 ST15-09 ST15-10 ST15-10 ST15-10 ST15-10 ST15-11 ST15-11 ST15-12 ST15-12 ST15-13 ST15-13 ST15-13 ST15-13 ST15-14 ST15-14 ST15-14 ST15-14 ST15-15 ST15-15 ST15-16 ST15-16 ST15-16 ST15-16"
+  const st16="ST16-01 ST16-01 ST16-01 ST16-01 ST16-02 ST16-02 ST16-02 ST16-02 ST16-03 ST16-03 ST16-04 ST16-04 ST16-04 ST16-04 ST16-05 ST16-05 ST16-05 ST16-05 ST16-06 ST16-06 ST16-06 ST16-06 ST16-07 ST16-07 ST16-07 ST16-07 ST16-08 ST16-08 ST16-09 ST16-09 ST16-09 ST16-09 ST16-10 ST16-10 ST16-10 ST16-10 ST16-11 ST16-11 ST16-12 ST16-12 ST16-13 ST16-13 ST16-13 ST16-13 ST16-14 ST16-14 ST16-14 ST16-14 ST16-15 ST16-15 ST16-16 ST16-16 ST16-16 ST16-16"
+  // the nominal st17 cards, not including the bonus cards like bt8-039 that would fit  
+const st17="ST17-01 ST17-01 ST17-01 ST17-01 ST17-02 ST17-02 ST17-03 ST17-03 ST17-04 ST17-04 ST17-04 ST17-04 ST17-05 ST17-05 ST17-05 ST17-05 ST17-06 ST17-06 ST17-07 ST17-07 ST17-07 ST17-07 ST17-08 ST17-08 ST17-09 ST17-09 ST17-09 ST17-09 ST17-10 ST17-10 ST17-10 ST17-10 ST17-11 ST17-11 ST17-12 ST17-12 ST17-12 ST17-12 EX4-032 EX4-032 EX4-032 EX4-032 EX4-033 EX4-033 EX4-033 EX4-033 EX4-057 EX4-057 EX4-057 EX4-057 BT8-091 BT8-091 EX2-061 EX2-061"
+      const st18=` ST18-Fluffy,ST18-Fluffy,ST18-Fluffy,ST18-Fluffy
  
  ST18-Biyomon ST18-Biyomon ST18-Biyomon ST18-Biyomon ST18-Falcomon 
  ST18-Falcomon ST18-Falcomon ST18-Falcomon ST18-Pteromon 
  ST18-Pteromon ST18-Muchomon ST18-Muchomon ST18-Muchomon ST18-Muchomon ST18-Kiwimon
  ST18-Kiwimon ST18-Kiwimon ST18-Kiwimon ST18-Kokatorimon ST18-Kokatorimon ST18-Kokatorimon ST18-Kokatorimon ST18-Galemon ST18-Galemon ST18-Deramon ST18-Deramon ST18-Deramon ST18-Deramon ST18-GrandGalemon ST18-GrandGalemon ST18-Parrotmon ST18-Parrotmon ST18-Parrotmon ST18-Parrotmon ST18-Zephagamon ST18-Zephagamon ST18-Eaglemon ST18-Eaglemon ST18-Eaglemon ST18-Eaglemon ST18-Shoto ST18-Shoto ST18-Shoto ST18-Shoto ST18-Anemoi ST18-Anemoi ST18-Anemoi ST18-Anemoi P-GreenMemoryBoost P-GreenMemoryBoost
-</textarea><br>
-</td>
-    <td>
-        <input type=checkbox id=bot1 name=bot1 value=1 /><label for="bot1">Player 1 is bot</label>
-        <br/>
-        <input type=checkbox id=bot2 name=bot2 value=1 checked /><label for="bot2">Player 2 is bot</label>
-        <br/>
-        <select name="launch" id="launch">
-          <option value="1">Launch player 1 window</option>
-          <option value="2">Launch player 2 window</option>
-          <option value="3">Go to redirect for launching both</option>      
-        </select>
-        <p>
-          <button type=submit name=submit value=go>GO!</button>
-      </tr> 
-</table>
-  </form>
+`;
+      // attempt at yellow vax
+ const yvax1  = "BT1-087 BT1-087 BT13-034 BT13-034 BT14-003 BT14-003 BT14-033 BT14-033 BT14-033 BT14-033 BT14-037 BT14-037 BT14-037 BT14-037 BT14-084 BT14-084 BT14-084 BT14-084 BT14-093 BT14-093 BT15-003 BT15-003 BT15-003 BT15-038 BT15-038 BT15-042 BT15-087 BT16-082 BT16-082 BT16-082 BT16-101 BT16-102 BT16-102 BT16-102 BT16-102 BT2-038 BT3-105 BT5-033 BT5-033 BT8-039 BT8-039 BT8-039 BT8-039 BT8-094 BT9-098 BT9-098 EX4-068 EX4-068 EX4-074 P-105 P-105 ST17-06 ST17-06 ST17-06 ST17-06"
+    // another attempt a yellow vax, probably a lot broken
+const yvax2 = "BT1-087 BT1-087 BT10-042 BT10-042 BT13-003 BT13-003 BT13-003 BT13-003 BT13-012 BT13-034 BT13-034 BT13-034 BT14-033 BT14-033 BT14-033 BT14-033 BT14-037 BT14-037 BT14-037 BT14-037 BT14-084 BT14-084 BT14-084 BT14-084 BT14-093 BT14-093 BT14-102 BT14-102 BT14-102 BT14-102 BT15-034 BT15-034 BT15-037 BT15-037 BT15-037 BT15-037 BT15-038 BT15-038 BT15-038 BT15-038 BT7-036 BT8-039 BT8-039 BT9-033 BT9-033 BT9-033 EX4-074 EX5-033 EX5-033 P-037 P-037 P-105 P-105 P-105"
+      const cs2="CS2-01 CS2-01 CS2-01 CS2-01 CS2-02 CS2-02 CS2-02 CS2-02 CS2-03 CS2-17 CS2-17 CS2-04 CS2-04 CS2-04 CS2-05 CS2-17 CS2-05 CS2-05 CS2-06 CS2-06 CS2-06 CS2-06 CS2-07 CS2-07 CS2-07 CS2-07 CS2-08 CS2-08 CS2-09 CS2-09 CS2-09 CS2-09 CS2-10 CS2-10 CS2-10 CS2-10 CS2-11 CS2-11 CS2-12 CS2-12 CS2-13 CS2-13 CS2-13 CS2-13 CS2-14 CS2-14 CS2-14 CS2-14 CS2-15 CS2-15 CS2-16 CS2-16 CS2-16 CS2-16"
+      const cs1="CS1-01 CS1-01 CS1-01 CS1-01 CS1-02 CS1-02 CS1-02 CS1-02 CS1-03 CS1-17 CS1-17 CS1-04 CS1-04 CS1-04 CS1-05 CS1-17 CS1-05 CS1-05 CS1-06 CS1-06 CS1-06 CS1-06 CS1-07 CS1-07 CS1-07 CS1-07 CS1-08 CS1-08 CS1-09 CS1-09 CS1-09 CS1-09 CS1-10 CS1-10 CS1-10 CS1-10 CS1-11 CS1-11 CS1-12 CS1-12 CS1-13 CS1-13 CS1-13 CS1-13 CS1-14 CS1-14 CS1-14 CS1-14 CS1-15 CS1-15 CS1-16 CS1-16 CS1-16 CS1-16"
+      let presets = [
+	  { name: "RED Gallantmon ST7", deck: st7 },
+	  { name: "BLUE Ulforceveedramon ST8", deck: st8 },
+	  { name: "BLACK Dragon of Courage ST15", deck: st15 },
+	  { name: "PURPLE Wolf of Friendship ST16", deck: st16 },
+	  { name: "GREEN Double Typhoon ST17", deck: st17 },
+	  { name: "GREEN Vortex Warrior ST18", deck: st18 },
+	  { name: "CUSTOM yellow-ish Shield Cat", deck: cs1 },
+	  { name: "CUSTOM blue-ish Sword Dog", deck: cs2 },
+      ];
+    </script>      
 
-    <h1>Creative Mode</h1>
+    <form method=POST action="/game/init_game" onsubmit="submit.disabled = true; return true;">
+    <table>
+      <tr>
+	<td colspan=2 style="text-align:center;">You can reference a card by its ID, or by set number and a substring long enough to be unique.
+      </tr>
+      <tr>
+	<td style="text-align: center;">
+	  <span class="textarea-container">
+	    <label for="player1-deck">Player 1 Deck:</label>
+	    <br/>
+	    <textarea id="player1-deck" rows="10" cols="30" name="p1string"></textarea>
+	    <br/>
+	    Select a preset deck:
+	    <select id="player1-deck-preset">
+	    </select>
+      <br/>
+      <label for="bot1">Player 1 is a Bot:</label>
+      <input type="checkbox" id="bot1" name="bot1" value="1">
+    </span>
+    <td style="text-align: center;">
+    <span class="textarea-container">
+      <label for="player2-deck">Player 2 Deck:</label>
+      <br/>
+      <textarea id="player2-deck" rows="10" cols="30" name="p2string"></textarea>
+      Select a preset deck:
+      <select id="player2-deck-preset">
+      </select>
+      <br/>
+      <label for="bot2">Player 2 is a Bot:</label>
+      <input type="checkbox" id="bot2" name="bot2" value="1" CHECKED>
+    </span>
+    <script>
+
+      let sel1  = document.getElementById("player1-deck-preset");
+      let sel2  = document.getElementById("player2-deck-preset");
+
+      presets.forEach(deck => {
+	  const option = document.createElement('option');
+	  option.value = deck.name;
+	  option.textContent = deck.name;
+	  const option2 = option.cloneNode(true);
+	  //	  sel1.appendChild(option);
+	  sel1.options.add(option);
+	  
+	  sel2.options.add(option2);
+	  
+	  //	  sel2.appendChild(option);
+      });
+
+      const p1deck = document.getElementById("player1-deck");
+      const p2deck = document.getElementById("player2-deck");
+      sel1.addEventListener('change', () => {
+	  const selectedDeck = presets.find(deck => deck.name === sel1.value);
+	  p1deck.textContent = selectedDeck.deck;
+      });
+      sel2.addEventListener('change', () => {
+	  const selectedDeck = presets.find(deck => deck.name === sel2.value);
+	  p2deck.textContent = selectedDeck.deck;
+      });
+      // set to default
+      sel1.value = "GREEN Vortex Warrior ST18";
+      sel2.value = "PURPLE Wolf of Friendship ST16";
+      var event = new Event('change');
+      sel1.dispatchEvent(event);
+      sel2.dispatchEvent(event);
+      </script>
+
+    <tr>
+      <td colspan=2 style="text-align: center;">
+      <label for="launch">Launch Mode:</label>
+      <select id="launch" name="launch">
+        <option value="1">Player 1</option>
+        <option value="2">Player 2</option>
+        <option value="3">Both</option>
+      </select>
+
+      <label for="gid">Game ID:</label>
+      <input type="text" id="gid" placeholder="(optional)" />
+
+      <label for="random-seed">Random Seed:</label>
+      <input type="text" id="random-seed" placeholder="(optional)" />
+      <br>
+      <button type=submit name=submit value=go>START</button>
+    </tr></table>
+
+    </form>
+    <div class="explanatory-text">
+      </div>
+    <h1>Basics</h1>
+
+    <p>There is no mulligan. Player 1 always goes first. Player 1 is always at the bottom.
+
+    <p>Lots of cards aren't working. Xros and DNA are completely missing. Cards from the preset decks you can create should work (with some bugs).
+      <h1>Creative Mode</h1>
     <a href="creative.html">Here it is</a> with several challenges.
 
     <p>You can compose a challenge to give to your friends. Helpful for learning those weird edge cases.</p>
 
-    <h1> Other stuff</h1>
-
-  <p>If you want to try, open <a href="/build/index.html?gid=<%= word %>&pid=1">this </a> in one tab and <a
-      href="/build/index.html?gid=<%= word %>&pid=2">this</a> in another. There's no
-      mulligan right now, osrry.</p>
-  <h2>Recent Changes</h2>
-
   <h2>Feedback</h2>
-  <p>On Discord for now <a href="https://discord.gg/42pgVH5x">invite link</a> or reach out to the team member
-    who
-    helped you</p>
+  <p>On Discord for now <a href="https://discord.gg/42pgVH5x">invite link</a>
   <p>Say stuff you want, there's a suggested list of requests down below</p>
   <h2>Bugs</h2>
   <p>If you try to break the software by messing with the inputs you'll succeed and it won't be interesting.
     If
     you
     breaking the game logic by playing a weird set of cards, that <b>is</b> interesting.</p>
-  <ul>Known bugs
+  <h3>Known bugs</h3>
+    <ul>
     <li>ST8 goldrapidmon's first effect always targets 1 regardless of tamer count</li>
-    <li>Searchers where you can pick 1 A and 1 B don't currently validate your choices if you choose 2 A
-    </li>
+    <li>Searchers are expecting you to play fair</li>
     <li>ST17 Henry's Bio-Merge is broken, will probably hold off on this one for a bit</li>
-    <li>Return-to-hand has 2 bugs: Rapidmon's immunity not applying, and the bounced instance remains able
-      to respond</li>
+    <li>Return-to-hand has 2 bugs: Rapidmon's immunity not applying, and the bounced instance remains able to respond</li>
   </ul>
-
-  <ul>Reproducing issues
-    <li>Each gid uses the same random seed at same start for debugging purposes. If you want it to be really
-      random,
-      start the gid with "rand". If you want both players to have the same seed (meaning they'll get a
-      similar
-      mix
-      of levels, tamers, and options) prefix the seed with "same". </li>
-    <li>You can reset the game by putting "reset" in the instruction box in the top left and hitting Send.
-    </li>
-  </ul>
-
-</body>
-
+</div>
 </html>

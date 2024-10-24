@@ -12,6 +12,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.6",
+    "react-modal": "^3.16.1",
     "react-scripts": "5.0.1",
     "react-toastify": "^10.0.4",
     "socket.io-client": "^4.7.4",
@@ -19,7 +20,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && cp landing.html build/landing.html",
+    "build": "react-scripts build && cp landing.html build/landing.html && cp creative.html build/creative.html && cp styles.css build/styles.css",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
