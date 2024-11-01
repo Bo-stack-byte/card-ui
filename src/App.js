@@ -12,7 +12,7 @@ import LogDisplay from './LogDisplay';
 
 //import ImageComponent from "./util"
 
-// Visualizer v0.17
+// Visualizer v0.5.0
 
 
 const initialData = {}
@@ -134,8 +134,8 @@ const Instance = ({ instance, x, y }) => {
   console.log("instance is");
   console.log(instance);
   let count = instance.stack.length;
-  let delta = 25 - count * 3;
-  if (count > 4) delta -= count;
+  let delta = 25; //  - count * 3;
+  if (count > 4) delta -= count; // scrunch cards a bit if stack is big
   // console.log(`count is ${count} delta is ${delta}`);
   let top = y + delta * (count - 1);
 
