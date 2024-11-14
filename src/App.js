@@ -10,9 +10,9 @@ import Draggable from 'react-draggable';
 import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 
-//import ImageComponent from "./util"
 
-// Visualizer v0.5.0
+
+// Visualizer v0.5.1 log window scrolls
 
 
 const initialData = {}
@@ -93,7 +93,7 @@ const PlayerArea = ({ player, className, bottom }) => {
       <Trash trash={player.trash} x={bot ? 670 : 25} y={bot ? -225 : -1050} />
       <Field field={player.field} y={bot ? -500 : -800} />
       <Hand hand={player.hand} _y={bot ? -40 : -1200} />
-      <Security security={player.security} />
+      <Security security={player.security} x={bot ? -20 : width - 100} y={bot ? -400 : -800} rot={bot ? 270 : 90} />
     </div>
   );
 }
@@ -123,8 +123,6 @@ const Deck = ({ pile, x, y, card, name, bottom }) => {
 }
 const EggZone = ({ eggzone, x, y }) => {
   console.debug("eggzone area");
-  console.log(eggzone);
-  console.log(123123234);
   if (!eggzone) return (<hr />);
   return (<Instance key={uuidv4()} instance={eggzone} x={x} y={y} />);
 };
@@ -213,11 +211,34 @@ const Trash = ({ trash, x, y }) => (
 
   <div className="trash">
     {trash.map((card, index) => (
-      <Card key={uuidv4()} card={card} x={x} y={y} />
+      <Card key={uuidv4()} card={card} x={x+index*2} y={y+index*2} />
     ))}
   </div>
 );
-const Security = ({ security }) => <div className="security">Security: {security.count}</div>;
+const Security = ({ security, x, y, rot }) => {
+  let cards = security.cards;
+//  cards =  ["BT19-052@GREEN,BLACK","BT18-046@GREEN,BLACK","BT18-046@GREEN,BLACK","back","back"];
+  let count = cards.length;
+  cards = cards.map( c => c == "DOWN" ? "back" : c );
+
+  let delta = 30;
+  if (count > 6) delta -= count;
+  
+  // this shouldn't say "eggzone"
+  return (
+    <div className="wrapper">
+      <div className="eggzone">
+        {cards.map((card, index) => (
+          <Card key={uuidv4()} card={card} x={x + (index%2 * 50)} y={y - index * delta} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+        ))}
+      </div>
+    </div>
+  )
+
+
+}
+
+
 
 
 ///

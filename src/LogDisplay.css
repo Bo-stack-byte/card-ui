@@ -15,7 +15,20 @@
 
 }
 
+
+/* Style the log-content div to handle overflow */
 .log-content {
+    max-height: 70vh; /* Ensure the log content doesn't overflow the modal */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+/* Ensure preformatted text also handles overflow correctly */
+.log-content pre {
+    white-space: pre-wrap; /* Wrap long lines */
+    word-wrap: break-word; /* Break words if needed */
+}
+
+.log-content2 {
     position: fixed;
     overflow-y: auto; /* Enable scrolling */
     z-index: 1001;
