@@ -7,7 +7,30 @@ Enter the board state and press "go" underneath. Make your own down below, or us
 
 <h2>Sample Scenarios</h2>
 
-<h3>Blast digivolve + block + retalation</h3>
+<h3>Token Test</h3>
+<form method=POST action=/game/set_up_board><textarea rows=15 cols=80 name=board>
+VERSION:2
+
+TOKEN1:TKN-Uka TKN-Uka TKN-Pipe TKN-Pipe
+FIELD1:Sakuya,EX2-Sakuya
+HAND1:BT19-Sakuya EX8-SakuyamonX
+DECK1:ST15-02 ST15-02 ST15-02 ST15-02 ST15-02 ST15-02
+SECURITY2:CS2-02 CS2-03 CS2-04
+DECK2:CS2-08 CS2-09
+FIELD2:Amy,CS2-Aggressive
+
+GAME:P1 T3 MAIN 8
+
+  </textarea> <br> <input type=submit value=go />
+            <select id="launch" name="launch">
+              <option value="1">Player 1</option>
+              <option value="2">Player 2</option>
+              <option value="3">Both</option>
+            </select>
+</form>
+
+
+<h3>Blast digivolve + block + retaliation</h3>
 
 Player 2 swings in. Player 1 blast digivolves and blocks. Then Retaliation kills Player 1's digimon and overflow occurs.
 <form method=POST action=/game/set_up_board><textarea rows=20 cols=80 name=board>
