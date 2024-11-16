@@ -3,17 +3,77 @@
 import { v4 as uuidv4 } from 'uuid';
 import imagesContext from "./util";
 import io from 'socket.io-client';
-import React, { useEffect, useState } from 'react';
+import React, {
+  useEffect, useState,
+  createContext, useContext
+} from 'react';
 import { StatusWindow, populate_tree } from './StatusWindow';
 import Counter from './Counter';
 import Draggable from 'react-draggable';
 import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
+import CardModal from './CardModal';
 
-
-
+// Visualizer v0.5.3 proper modal overlay
+// Visualizer v0.5.2 better game init
 // Visualizer v0.5.1 log window scrolls
 
+/*
+const CardClickContext = createContext();
+export const useCardClick = () => useContext(CardClickContext);
+export const CardClickProvider = ({ children }) => {
+  const handleCardClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsModalOpen(true);
+  };
+  setSelectedImage(imageUrl);
+  setIsModalOpen(true);
+  return (
+    <CardClickContext.Provider value={handleCardClick}>
+      {children}
+    </CardClickContext.Provider>
+  );
+};*/
+
+/*
+const CardClickContext = createContext();
+export const useCardClick = () => useContext(CardClickContext);
+export const CardClickProvider = ({ children }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('');
+    const handleCardClick = (imageUrl) => {
+        setSelectedImage(imageUrl);
+        setIsModalOpen(true);
+    };
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+    return (
+        <CardClickContext.Provider value={{ handleCardClick, selectedImage, isModalOpen, closeModal }}>
+            {children}
+        </CardClickContext.Provider>
+    );
+};
+*/
+
+
+
+const CardClickContext = createContext();
+export const useCardClick = () => useContext(CardClickContext);
+export const CardClickProvider = ({ children }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
+  const handleCardClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsModalOpen(true);
+  };
+  const closeModal = () => { setIsModalOpen(false); };
+  return (
+    <CardClickContext.Provider value={{ handleCardClick, selectedImage, isModalOpen, closeModal }}>
+      {children}
+    </CardClickContext.Provider>
+  );
+};
 
 const initialData = {}
 
@@ -28,11 +88,23 @@ const App = () => {
 
   return (
     <div className="game-field">
-      <InputBox onSendMessage={handleSendMessage} />
-      <TableTop response={message} onSendMessage={handleSendMessage} />
-      <StatusWindow />
+      <div className="top-element" style={{ zIndex: 12000 }}>
+        <InputBox onSendMessage={handleSendMessage} />
+      </div>
+      <CardClickProvider>
+        <TableTop response={message} onSendMessage={handleSendMessage} />
+        <StatusWindow />
+        <CardModalController />
+      </CardClickProvider>
     </div>
   );
+};
+
+const CardModalController = () => {
+  const { selectedImage, isModalOpen, closeModal } = useCardClick();
+  console.log('ModalController re-render', { selectedImage, isModalOpen });
+  console.log("xxxx " + selectedImage + "fffff");
+  return (<CardModal imageUrl={selectedImage} isOpen={isModalOpen} onClose={closeModal} />);
 };
 
 function TableTop({ response }) {
@@ -85,8 +157,13 @@ const PlayerArea = ({ player, className, bottom }) => {
   let width = 800;
   let height = 1120;
   let bot = (bottom == 1);
+  console.log(103, player);
   return (
     <div className={`player-area ${className}`}>
+      <div className="top-element">
+        <Reveal pile={player.reveal} />
+      </div>
+
       <EggZone eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
       <Deck bottom={bottom} x={bot ? -40 : width - 60} y={bot ? -230 : -1050} name={"eggs"} pile={player.eggs} card="eggback" />
       <Deck bottom={bottom} x={bot ? 670 : 25} y={bot ? -400 : -875} name={"deck"} pile={player.deck} card="back" />
@@ -170,66 +247,152 @@ function y(y) { return y; }
 const Hand = ({ hand, _y }) => {
 
   if (!hand.cards) hand.cards = Array(hand.count).fill("back");
+
+
+  const card_width = 80;
+  if (hand.count > 8) (card_width -= hand.count);
+  if (hand.count > 12) (card_width -= hand.count);
+
+  const center = 300; //??
+  const width = hand.count * 50;
+  const left = center - width / 2;
+  console.log(left, width, center);
+
   return (
     <div className="hand">
       {hand.cards.map((card, index) => (
-        <Card key={uuidv4()} card={card} x={x(150 + 50 * index)} y={y(_y)} z={50} />
+/*        <CardClickProvider> */
+          <Card key={uuidv4()} card={card} x={x(left + card_width * index)} y={y(_y)} z={50} click={true} />
+/*        </CardClickProvider> */
       ))}
     </div>
   );
 };
 
-const Card = ({ card, x, y, z, rotate }) => {
+const Card = ({ card, x, y, z, rotate, click }) => {
+
+  //  const [isEnlarged, setIsEnlarged] = useState(false);
 
   /*
-  const [isEnlarged, setIsEnlarged] = useState(false);
-
   const handleClick = () => {
-    setIsEnlarged(true);
-  };*/
-
-  /*
-        {isEnlarged && ( 
-              <img src={imagesContext(card)}     alt={card}   className="card" style={{position: 'absolute', scale:'500%', left: `${600}px`, top: `${-600}px`, zIndex:z }} />
-      )}
-*/
+      console.log("CLICK");
+      setIsEnlarged(true);
+    }
+  
+          {isEnlarged && ( 
+                <img src={imagesContext(card)}     alt={card}   className="card" style={{position: 'absolute', scale:'500%', left: `${600}px`, top: `${-600}px`, zIndex:z }} />
+        )}
+  */
+  const context = useCardClick();
+  const { handleCardClick } = context;
+  console.log(123, handleCardClick);
+  const absPosition = {
+    position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: z,
+    transform: `rotate(${rotate}deg)`
+  };
+  const relPosition = {};
+  let fn = click ?   ( () => handleCardClick(imagesContext(card)) ) : undefined;
 
   return (
     <div>
-      <img src={imagesContext(card)} alt={card} className="card" style={{
-        position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: z,
-        transform: `rotate(${rotate}deg)`
-      }} />
+      <img onClick={fn} src={imagesContext(card)} alt={card} className="card"
+        style={x ? absPosition : relPosition} />
     </div >
   );
+
 };
 
 
 
 
+const Reveal = ({ pile }) => {
+
+  let _y = -600;
+
+  console.log(249, pile);
+  if (!pile || !pile.count) return (<hr />);
+  if (!pile.cards) pile.cards = Array(pile.count).fill("back");
+  return (
+    <div className="top-element">
+      <ClickableDraggable>
+        <p>another thing</p>
+        <div className="reveal">
+          <table className="revtable">
+            <tbody>
+              <tr>
+                {pile.cards.map((card, index) => (
+                  <td key={uuidv4()} width="200px" height="300px">
+                    <Card key={uuidv4()} card={card} />
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </ClickableDraggable>
+    </div >
+  );
+
+
+};
+
+//const imageSrc = imagesContext(`./cards/fd-${selectedState}.png`);
+//
+//  const [response, setResponse] = useState('');
+//  console.log("blob names is " + blobNames);
+// console.log(blobNames);
+// console.log(JSON.stringify(blobNames));
+/*
+if (!blobNames) return
+
+let self = true;
+let reveal = blobNames.cards;
+if (!reveal) {
+}
+
+return (
+ <div className="reveal">
+   <table>
+     <tbody>
+       <tr>
+
+         {reveal && reveal.map((blobName, index) => (
+           <td key={uuidv4()} width="10px">
+             XXXXXX <Card key={uuidv4()} blobName={blobName} />
+           </td>
+         ))}
+       </tr>
+     </tbody>
+   </table>
+ </div>
+);
+};
+*/
+
 const Trash = ({ trash, x, y }) => (
 
   <div className="trash">
     {trash.map((card, index) => (
-      <Card key={uuidv4()} card={card} x={x+index*2} y={y+index*2} />
+      <Card key={uuidv4()} card={card} x={x + index * 2} y={y + index * 2} />
     ))}
   </div>
 );
 const Security = ({ security, x, y, rot }) => {
   let cards = security.cards;
-//  cards =  ["BT19-052@GREEN,BLACK","BT18-046@GREEN,BLACK","BT18-046@GREEN,BLACK","back","back"];
+  //  cards =  ["BT19-052@GREEN,BLACK","BT18-046@GREEN,BLACK","BT18-046@GREEN,BLACK","back","back"];
   let count = cards.length;
-  cards = cards.map( c => c == "DOWN" ? "back" : c );
+  cards = cards.map(c => c == "DOWN" ? "back" : c);
 
   let delta = 30;
   if (count > 6) delta -= count;
-  
+
   // this shouldn't say "eggzone"
   return (
     <div className="wrapper">
       <div className="eggzone">
         {cards.map((card, index) => (
-          <Card key={uuidv4()} card={card} x={x + (index%2 * 50)} y={y - index * delta} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card key={uuidv4()} card={card} x={x + (index % 2 * 50)} y={y - index * delta} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
     </div>
@@ -591,7 +754,7 @@ function InputBox({ onSendMessage }) {
             size="4"
           />
           <select multiple={formState.multiple} className="moves" id="command"
-          value={formState.selectedValue} onChange={handleSelectChange} onTouchStart={handleSelectChange}>
+            value={formState.selectedValue} onChange={handleSelectChange} onTouchStart={handleSelectChange}>
             {formState && formState.selectOptions &&
               formState.selectOptions.map((option) => (
                 <option key={option.value} value={option.value} fred={option.last_id} thing1="two" >
@@ -612,7 +775,7 @@ function InputBox({ onSendMessage }) {
         </div>
       </ClickableDraggable>
       <Draggable cancel="touchstart">
-      <div className={`popup ${messages.length > 0 ? 'show' : 'hide'}`} onClick={handleLogClick}>
+        <div className={`popup ${messages.length > 0 ? 'show' : 'hide'}`} onClick={handleLogClick}>
           {messages.length > 0 && messages[0]}
         </div>
       </Draggable>

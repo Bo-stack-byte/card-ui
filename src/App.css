@@ -1,6 +1,6 @@
 /* App.css */
 .game-field {
-  position: absolute; /* Anchored to the left edge */
+  position: relative; /* changed Anchored to the left edge */
   left: 0;
   width: 800px;
   height: 1120px;
@@ -8,6 +8,7 @@
   background-size: contain;
   background-position: left top;
   background-repeat: no-repeat;
+  z-index: 10;
 }
 
 .player-area {
@@ -78,9 +79,12 @@
   opacity: 0; /* Target opacity for the hidden state */
 }
 
+/* modals should be on top-top, +2000
+   input box should be top of what's left, say 1200
+   */
 .inputbox {
   position: absolute;
-  z-index: 800;
+  z-index: 1200;
   top: 370px;
 }
 
@@ -94,6 +98,7 @@
 
 
 }
+
 
 
 
@@ -148,3 +153,90 @@
   font-variant-numeric: tabular-nums;
 }
 
+
+
+.delete-me {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  flex-direction: column; 
+  align-items: center; 
+
+}
+
+/* Styling for the parent div */
+.reveal {
+  position: absolute;
+  top: 200px;
+  left: 200px;
+  width: 1000px;
+  height: 500px;
+  background-color: rgba(255, 255, 255, 0.8);
+  opacity: 95%;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Styling for the table */
+.revtable {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Styling for the images */
+.revtable img {
+  transform: scale(2); /* Scale images to 200% */
+  margin: 0 5px; /* Adjust margin as needed to control spacing between images */
+  opacity: 95%;
+}
+
+
+
+.reveal_X {
+  position: absolute;
+  background-color: white;
+  top: 200px;
+  left: 200px;
+
+  width:1000px;
+  height:500px;
+  
+
+  
+  opacity: 80%;
+  /* Adjust these values as needed to position the Reveal component correctly */
+  z-index: 9999; /* Ensure it appears on top */
+  background-color: rgba(255, 255, 255, 0.8); /* Optional: semi-transparent background */
+
+}
+
+.revtable_X {
+   width: 100%;                                                                                                          
+  max-height: 100%;                                                                                                                 
+  overflow-y: auto;                                                                                                                 
+  }
+  
+
+.reveal_X > * {
+  transform: scale(1.0); /* Scale up by 100% (2x) */
+}
+
+
+.top-element {
+  position: fixed; /* or absolute depending on your needs */
+  top: 0; /* Adjust position as necessary */
+  left: 0; /* Adjust position as necessary */
+  z-index: 9999; /* Very high value to ensure it stays on top */
+}
+
+.modal-image {
+  /*width: 100%;
+  height: auto;*/
+  cursor: pointer; /* Make the image appear clickable */
+}

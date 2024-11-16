@@ -12,7 +12,7 @@ import chain7 from './chain7.png';
 import chain8 from './chain8.png';
 import chain9 from './chain9.png';
 import './LogDisplay.css';
-import Modal from 'react-modal'; // Install this via npm/yarn
+import Modal from 'react-modal';
 import ClickableDraggable from './ClickableDraggable';
 
 function getChainImage(i) {
@@ -87,7 +87,6 @@ const LogDisplay = ({ logs, gid }) => {
 
 
     return (
-        <ClickableDraggable cancel="touchstart">
             <div className="log-container">
                 <div className="log-header">
                     <button onClick={copyAllText} onTouchStart={copyAllText} >Copy All Text</button>
@@ -114,7 +113,6 @@ const LogDisplay = ({ logs, gid }) => {
                     </div>
                 </Modal>
             </div>
-        </ClickableDraggable>
 
     );
 };
