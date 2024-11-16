@@ -34,6 +34,7 @@ GAME:P1 T3 MAIN 8
 
 Player 2 swings in. Player 1 blast digivolves and blocks. Then Retaliation kills Player 1's digimon and overflow occurs.
 <form method=POST action=/game/set_up_board><textarea rows=20 cols=80 name=board>
+VERSION:2
 # Digimon on field are space-separated.
 
 # Digimon each Digimon is comma-separated field.
@@ -63,6 +64,7 @@ GAME:P2 T3 MAIN 1
 <p>Player 2 has zero memory, but 5 cards in hand. Can they activate their effects in the right order to wipe Player 1's
     field and win?
 <form method=POST action=/game/set_up_board><textarea rows=20 cols=80 name=board>
+VERSION:2
 GAME:P2 T4 MAIN 0
 
 # Player 1 has a MetalGreymon that can blast digivolve and will get bonuses on redirect. They also have an Agumon.
@@ -84,6 +86,7 @@ DECK2:BT3-089 BT3-089
 <p>Player 2 has several mon waiting to attack on their turn.
 <p>What can player 1 do to win?</p>
 <form method=POST action=/game/set_up_board><textarea rows=15 cols=60 name=board>
+VERSION:2
 SECURITY1:ST15-02
 SECURITY2:ST16-02
 P1:ST15-05,ST15-02,REST ST15-11,ST15-08,ST15-03,REST
@@ -97,6 +100,7 @@ GAME:P1 T6 MAIN 5
 
 <h3>Make your own</h3>
 <form method=POST action=/game/set_up_board><textarea rows=15 cols=80 name=board>
+VERSION:2
 #Digimon on field are space-separated.
 #Cards in a stack are comma-separated.
 #Lines with # are comments and ignored.
