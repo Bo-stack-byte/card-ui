@@ -16,13 +16,14 @@
 }
 
 .player-area.top {
-  top: 0; /* Align at the top */
-  width: 100%; /* Full width to avoid scrolling */
+  top: 0; 
+  width: 100%; 
+
 }
 
 .player-area.bottom {
-  bottom: 0; /* Align at the bottom */
-  width: 100%; /* Full width to avoid scrolling */
+  top: 0; 
+  width: 100%; 
 }
 
 .hand {
@@ -33,6 +34,10 @@
   justify-content: flex-start;
 }
 
+
+.wrapperUNUSED {
+  position: relative; /* Enable absolute positioning for child elements */
+}
 
 
 .card2 {
@@ -48,14 +53,39 @@
   position: absolute; /* Ensure absolute positioning */
 }
 
-.text-overlay {
+.dp-overlay {
   position: absolute; /* Position the text on top */
   top: 0; /* Align to top */
   left: 0; /* Align to left */
   color: white; /* Adjust color and other styles as needed */
+  font-family: 'VT323', 'Consolas', monospace;
+  font-size: 24px;
+  text-align: center;
   z-index: 900;
   width: 100px;
-  background-color: rgba(0, 0, 0, 0.5); /* Optional: Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.8); 
+}
+
+.detail-overlay {
+  position: absolute; 
+  bottom: 0; 
+  left: 0; 
+  color: white; 
+  font-size: 8px;
+  z-index: 900;
+  width: 100px;
+  background-color: rgba(0, 0, 0, 0.5); 
+}
+
+.text-overlay {
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  color: white; 
+  font-size: 8px;
+  z-index: 900;
+  width: 100px;
+  background-color: rgba(0, 0, 0, 0.5); 
 }
 
 /* display messages */
@@ -169,19 +199,19 @@
 /* Styling for the parent div */
 .reveal {
   position: absolute;
-  top: 200px;
+  top: 150px;
   left: 200px;
   width: 1000px;
   height: 500px;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(0, 0, 0, 0.4);
   opacity: 95%;
   z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
+  vertical-align: middle;
 }
 
-/* Styling for the table */
 .revtable {
   display: flex;
   flex-direction: row;
@@ -224,7 +254,7 @@
   
 
 .reveal_X > * {
-  transform: scale(1.0); /* Scale up by 100% (2x) */
+  transform: scale(1.0); 
 }
 
 
@@ -236,7 +266,28 @@
 }
 
 .modal-image {
-  /*width: 100%;
-  height: auto;*/
-  cursor: pointer; /* Make the image appear clickable */
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  max-height: 100vh; /* Restrict the height to the viewport height */
+  object-fit: contain; /* Ensure the entire image is visible */
+  touch-action: manipulation; /* Allow pinch-to-zoom */
+  display: block; /* Ensure the image behaves like a block element */
+  margin: auto; /* Center the image */
 }
+
+
+
+
+
+@media (max-width: 768px) {
+  .modal-content {
+      transform: scale(1.5); 
+  }
+}
+/*
+@media (max-width: 480px) {
+  .modal-image {
+      transform: scale(2); 
+  }
+}
+*/

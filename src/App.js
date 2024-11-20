@@ -14,6 +14,9 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
+// Visualizer v0.5.6 proper orientation on both fields
+// Visualizer v0.5.5 more overlay attempts
+// Visualizer v0.5.4 fixing overlay, more tokens
 // Visualizer v0.5.3 proper modal overlay
 // Visualizer v0.5.2 better game init
 // Visualizer v0.5.1 log window scrolls
@@ -159,18 +162,22 @@ const PlayerArea = ({ player, className, bottom }) => {
   let bot = (bottom == 1);
   console.log(103, player);
   return (
-    <div className={`player-area ${className}`}>
+    <div className={`player-area ${className}`}
+      style={{ position: 'absolute', 
+        top: bottom ? '1100px' : '1080px', 
+        left: '1px',
+        height: '0px' }} >
       <div className="top-element">
         <Reveal pile={player.reveal} />
       </div>
 
       <EggZone eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
-      <Deck bottom={bottom} x={bot ? -40 : width - 60} y={bot ? -230 : -1050} name={"eggs"} pile={player.eggs} card="eggback" />
       <Deck bottom={bottom} x={bot ? 670 : 25} y={bot ? -400 : -875} name={"deck"} pile={player.deck} card="back" />
       <Trash trash={player.trash} x={bot ? 670 : 25} y={bot ? -225 : -1050} />
-      <Field field={player.field} y={bot ? -500 : -800} />
+      <Field field={player.field} y={bot ? -450 : -800} />
       <Hand hand={player.hand} _y={bot ? -40 : -1200} />
       <Security security={player.security} x={bot ? -20 : width - 100} y={bot ? -400 : -800} rot={bot ? 270 : 90} />
+      <Deck bottom={bottom} x={bot ? -40 : width - 60} y={bot ? -230 : -1050} name={"eggs"} pile={player.eggs} card="eggback" />
     </div>
   );
 }
@@ -181,21 +188,27 @@ const PlayerArea = ({ player, className, bottom }) => {
 const Deck = ({ pile, x, y, card, name, bottom }) => {
   //console.log("rendering " + bottom + " pile " + card + " " + x + " " + y + " length "); // + pile.length);
 
-  if (!pile || pile.count == 0) { return (<span>0</span>); }
+  //return (<span>0</span>);
+  if (!pile || pile.count == 0) {
+    return (<span>0</span>);
+  }
   //         <Card key={index} card={card} x={45} y={-180 - index*30} z={index} style={{ top: '80%', left: `${10 + index * 15}%` }} />
-  let index = 1;
+  let index = 0;
   return (
-    <div>
-      <div className="text-overlay" value={"SIZE: " + pile.count} dangerouslySetInnerHTML={{ __html: "CARDS:&nbsp;" + pile.count }}
-        style={{
-          position: 'absolute',
-          left: `${x}px`,
-          top: `${y}px`,
-          width: `80px`
-        }}
-      />
-      <Card key={uuidv4()} card={card} x={x} y={y} z={20} overlay={pile.count + " cards"} style={{ top: '80%', left: `${10 + index * 15}%`, width: `50px` }} />
-    </div>
+    <span>
+      <div>
+        <div className="text-overlay" value={"SIZE: " + pile.count} dangerouslySetInnerHTML={{ __html: "CARDS:&nbsp;" + pile.count }}
+          style={{
+            display: 'flex',
+            position: 'absolute',
+            left: `${x}px`,
+            top: `${y + 25}px`,
+            width: `80px`
+          }}
+        />
+        <Card key={uuidv4()} card={card} x={x} y={y} z={20} overlay={pile.count + " cards"} style={{ top: '80%', left: `${10 + index * 15}%`, width: `50px` }} />
+      </div>
+    </span>
   );
 }
 const EggZone = ({ eggzone, x, y }) => {
@@ -211,13 +224,16 @@ const Instance = ({ instance, x, y }) => {
   let count = instance.stack.length;
   let delta = 25; //  - count * 3;
   if (count > 4) delta -= count; // scrunch cards a bit if stack is big
+  console.error("OVERRIDE DELTA");
+  delta = 40;
   // console.log(`count is ${count} delta is ${delta}`);
   let top = y + delta * (count - 1);
 
   return (
     <div className="wrapper">
-      <div className="text-overlay" dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, top: `${y}px` }} />
-      <div className="eggzone">
+      <div className="dp-overlay" dangerouslySetInnerHTML={{ __html: typeof instance.dp === "number" ? `${instance.dp} DP` : null }} style={{ left: `${x}px`, top: `${y - 30}px` }} />
+      <div className="detail-overlay" dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
+      <div>
         {instance.stack.map((card, index) => (
           <Card key={uuidv4()} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index == count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
@@ -249,7 +265,7 @@ const Hand = ({ hand, _y }) => {
   if (!hand.cards) hand.cards = Array(hand.count).fill("back");
 
 
-  const card_width = 80;
+  let card_width = 80;
   if (hand.count > 8) (card_width -= hand.count);
   if (hand.count > 12) (card_width -= hand.count);
 
@@ -261,9 +277,9 @@ const Hand = ({ hand, _y }) => {
   return (
     <div className="hand">
       {hand.cards.map((card, index) => (
-/*        <CardClickProvider> */
-          <Card key={uuidv4()} card={card} x={x(left + card_width * index)} y={y(_y)} z={50} click={true} />
-/*        </CardClickProvider> */
+        /*        <CardClickProvider> */
+        <Card key={uuidv4()} card={card} x={x(left + card_width * index)} y={y(_y)} z={50} click={true} />
+        /*        </CardClickProvider> */
       ))}
     </div>
   );
@@ -285,13 +301,12 @@ const Card = ({ card, x, y, z, rotate, click }) => {
   */
   const context = useCardClick();
   const { handleCardClick } = context;
-  console.log(123, handleCardClick);
   const absPosition = {
     position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: z,
     transform: `rotate(${rotate}deg)`
   };
   const relPosition = {};
-  let fn = click ?   ( () => handleCardClick(imagesContext(card)) ) : undefined;
+  let fn = click ? (() => handleCardClick(imagesContext(card))) : undefined;
 
   return (
     <div>
@@ -309,23 +324,28 @@ const Reveal = ({ pile }) => {
 
   let _y = -600;
 
-  console.log(249, pile);
   if (!pile || !pile.count) return (<hr />);
   if (!pile.cards) pile.cards = Array(pile.count).fill("back");
   return (
     <div className="top-element">
       <ClickableDraggable>
-        <p>another thing</p>
         <div className="reveal">
           <table className="revtable">
             <tbody>
               <tr>
                 {pile.cards.map((card, index) => (
-                  <td key={uuidv4()} width="200px" height="300px">
+                  <td key={uuidv4()} width="200px" height="100px" valign="center">
                     <Card key={uuidv4()} card={card} />
                   </td>
                 ))}
               </tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
             </tbody>
           </table>
         </div>
@@ -390,7 +410,7 @@ const Security = ({ security, x, y, rot }) => {
   // this shouldn't say "eggzone"
   return (
     <div className="wrapper">
-      <div className="eggzone">
+      <div>
         {cards.map((card, index) => (
           <Card key={uuidv4()} card={card} x={x + (index % 2 * 50)} y={y - index * delta} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}

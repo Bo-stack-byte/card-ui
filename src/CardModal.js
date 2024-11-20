@@ -14,22 +14,25 @@ const customStyles2 = {
     }
 };
 
+
 const customStyles = {
-    content: {
-        zIndex: 1000, 
-        position: 'fixed', 
-        top: '50%', 
-        left: '50%', 
-        right: 'auto',
-        bottom: 'auto',
-        transform: 'translate(-50%, -50%)', // Center the modal
-    },
-    overlay: {
-        zIndex: 999, 
-        position: 'fixed', 
-        backgroundColor: 'rgba(0, 0, 0, 0.75)' // Optional: darken the background
-    }
-};
+     content: { 
+        zIndex: 1000, position: 'fixed', top: '50%', left: '50%', 
+        transform: 'translate(-50%, -50%)', 
+        width: 'auto', height: '100vh', 
+        maxHeight: '100vh', overflow: 'auto',  background: 'transparent', 
+        border: 'none', 
+    }, 
+    overlay: { 
+        zIndex: 999,
+         position: 'fixed',
+         backgroundColor: 'rgba(0, 0, 0, 0.75)'
+         } 
+        }
+
+
+
+
 
 const CardModal = ({ imageUrl, isOpen, onClose }) => {
     return (

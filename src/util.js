@@ -43,6 +43,9 @@ export const imagesContext = (_cardname) => {
       </linearGradient>
     </defs>
     <rect width="200" height="300" style="fill:url(#grad1);stroke-width:3;stroke:rgb(0,0,0)" />
+    <text x="50%" y="25%" dominant-baseline="middle" text-anchor="middle" fill="black" stroke="white" font-size="30" font-family="Impact" font-weight="bold" >
+      ${cardname}
+    </text>
     <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" stroke="black" font-size="50">
       ${name}
     </text>
