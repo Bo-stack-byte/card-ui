@@ -14,7 +14,8 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
-// Visualizer v0.5.6 proper orientation on both fields
+// Visualizer v0.5.7 include ST19
+// Visualizer v0.5.6 proper orientation on both parts?
 // Visualizer v0.5.5 more overlay attempts
 // Visualizer v0.5.4 fixing overlay, more tokens
 // Visualizer v0.5.3 proper modal overlay
