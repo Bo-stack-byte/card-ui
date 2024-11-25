@@ -7,6 +7,38 @@ Enter the board state and press "go" underneath. Make your own down below, or us
 
 <h2>Sample Scenarios</h2>
 
+<span style="display:none" id="special" />
+<h3>Custom Test</h3>
+<p>Someone linked you to this test.</p>
+<p>It was their responsibility to verify that the behavior is correct and they're using this as a visual demonstration.</p>
+<p>This simulator has bugs, and even if it didn't, it's should not be cited as truth.</p>
+<p>To start over, return to this page</p>
+<form method=POST action="/game/set_up_board" >
+    <textarea rows=15 cols=80 name=board id="specialtext">
+    </textarea>
+  <select id="launch" name="launch">
+      <option value="1">Player 1</option>
+      <option value="2">Player 2</option>
+      <option value="3">Both</option>
+    </select>
+     --&gt;
+    <input type=submit value="Press here to begin" />
+  </form>
+
+</span>
+<script>
+const url = new URL(window.location.href);
+const params = new URLSearchParams(url.search);
+
+const board = params.get('board');
+if (board && board.length > 0) {
+  document.getElementById("specialtext").value = board;
+  document.getElementById("special").style.display = "inline";
+}
+
+</script>
+
+
 <h3>Token Test</h3>
 <form method=POST action=/game/set_up_board><textarea rows=15 cols=80 name=board>
 VERSION:2

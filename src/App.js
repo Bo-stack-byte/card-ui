@@ -14,6 +14,7 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
+// Visualizer v0.5.8 show off creative mode, with warnings
 // Visualizer v0.5.7 include ST19
 // Visualizer v0.5.6 proper orientation on both parts?
 // Visualizer v0.5.5 more overlay attempts
