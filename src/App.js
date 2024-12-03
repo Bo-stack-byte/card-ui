@@ -14,6 +14,7 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
+// Visualizer v0.5.10 both log windows start fixed but are draggable *AND* scrollable
 // Visualizer v0.5.9 prepare for better UI, more card images
 // Visualizer v0.5.8 show off creative mode, with warnings
 // Visualizer v0.5.7 include ST19
@@ -99,7 +100,6 @@ const App = () => {
       </div>
       <CardClickProvider>
         <TableTop response={message} onSendMessage={handleSendMessage} />
-        <StatusWindow />
         <CardModalController />
       </CardClickProvider>
     </div>
@@ -118,10 +118,10 @@ function TableTop({ response }) {
   let data = _response;
   const params = new URLSearchParams(window.location.search);
   if (data && data.p1 && data.p2) {
-    let pid = params.get("pid");
-    let relative_memory = (pid == 1) ? data.p1.relative_memory : data.p2.relative_memory;
-    let top = (pid == 1) ? data.p2 : data.p1;
-    let bottom = (pid == 1) ? data.p1 : data.p2;
+    let pid = Number(params.get("pid"));
+    let relative_memory = (pid === 1) ? data.p1.relative_memory : data.p2.relative_memory;
+    let top = (pid === 1) ? data.p2 : data.p1;
+    let bottom = (pid === 1) ? data.p1 : data.p2;
     return (
       <div>
         <PlayerArea key={5000} player={top} bottom={0} className="bottom" />
@@ -140,7 +140,7 @@ const PlayerArea = ({ player, className, bottom }) => {
   //       <Pile x={800} y={-200} pilelength={player.trash} />
   let width = 800;
   let height = 1120;
-  let bot = (bottom == 1);
+  let bot = (bottom === 1);
   console.log(103, player);
   return (
     <div className={`player-area ${className}`}
@@ -305,8 +305,6 @@ const Card = ({ card, x, y, z, rotate, click }) => {
 
 const Reveal = ({ pile }) => {
 
-  let _y = -600;
-
   if (!pile || !pile.count) return (<hr />);
   if (!pile.cards) pile.cards = Array(pile.count).fill("back");
   return (
@@ -455,7 +453,7 @@ function InputBox({ onSendMessage }) {
         document.getElementById("last_id").value = last_id;
         formState.last_id = opt.last_id;
       }
-      if (last_id != -1) {
+      if (last_id !== -1) {
         opt.last_id = last_id;
       }
       if (!sec_value && !blob.text.match(/refresh/i)) {
@@ -469,7 +467,7 @@ function InputBox({ onSendMessage }) {
       formState.selectedValue = sec_value;
     }
     //console.log("LENGTH IS " + formState.selectOptions.length);
-    if (formState.selectOptions.length == 0) {
+    if (formState.selectOptions.length === 0) {
       formState.selectOptions.push(
         { command: "json", text: "REFRESH", ver: uuidv4(), last_id: last_id }
       );
@@ -522,16 +520,19 @@ function InputBox({ onSendMessage }) {
         let words = cmd.split(" ");
         switch (cmd.substring(0, 3)) {
           case "EVO": // EVO hand instance cost instance2
-            let [_, handindex, instance, cost, instance2] = words;
+            //let [, handindex, instance, cost, instance2] = words;
+            let [, handindex, , ] = words;
             if (!cards[handindex]) cards[handindex] = [];
             let c = cards[handindex];
             c.push({ command: cmd, text: text });
             break;
-          case "EVO": // EVO hand instance cost instance2
-            [_, handindex, instance, cost, instance2] = words;
+          case "PLAY": // ...EVO hand instance cost instance2
+            [, handindex, , , ] = words;
             if (!cards[handindex]) cards[handindex] = [];
             c = cards[handindex];
             c.push({ command: cmd, text: text });
+            break;
+          default:
             break;
 
         }
@@ -583,7 +584,7 @@ function InputBox({ onSendMessage }) {
           let my_json = JSON.stringify(nextMessage.data);
           onSendMessage(my_json); // updates the UI
           setIsProcessing(false);
-          if (masterQueue.length == 1) document.getElementById("send").disabled = false;
+          if (masterQueue.length === 1) document.getElementById("send").disabled = false;
           break;
         // I'm not sure the below is ever used
         case 'gameStateChange':
@@ -670,7 +671,7 @@ function InputBox({ onSendMessage }) {
     let array = formState.selectedValue;
     //console.log("### ", array);
     if (Array.isArray(array)) {
-      if (array.length == 1) {
+      if (array.length === 1) {
         cmd = array[0];
       }
       if (array.length > 1) {
@@ -692,7 +693,7 @@ function InputBox({ onSendMessage }) {
     //    console.log("sending msg", json);
     // console.log("JSON IS", json);
     document.getElementById("send").disabled = true;
-    let x = socket4.emit('chat message', json); // Send message to backend
+    socket4.emit('chat message', json); // Send message to backend
     formState.message = 'json';
 
     //console.log("x is ", x);
@@ -773,12 +774,11 @@ function InputBox({ onSendMessage }) {
         </div>
       </Draggable>
       <LogDisplay logs={logs} style={{ left: '1200px' }} gid={_gid} />
+      <StatusWindow />
+
 
     </div>
   );
-
-
-  let a = 3;
 }
 
 

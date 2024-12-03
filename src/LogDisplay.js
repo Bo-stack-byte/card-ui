@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef, cloneElement } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 //import React, { useState, useEffect, cloneElement } from 'react';
 
-import Draggable from 'react-draggable';
+//import Draggable from 'react-draggable';
 import chain1 from './chain1.png';
 import chain2 from './chain2.png';
 import chain3 from './chain3.png';
@@ -13,7 +13,8 @@ import chain8 from './chain8.png';
 import chain9 from './chain9.png';
 import './LogDisplay.css';
 import Modal from 'react-modal';
-import ClickableDraggable from './ClickableDraggable';
+//import ClickableDraggable from './ClickableDraggable';
+import DraggableHandle from './DraggableHandle';
 
 function getChainImage(i) {
     switch (i) {
@@ -27,6 +28,7 @@ function getChainImage(i) {
         case 7: return chain7;
         case 8: return chain8;
         case 9: return chain9;
+        default: return undefined;
     }
 }
 
@@ -87,11 +89,12 @@ const LogDisplay = ({ logs, gid }) => {
 
 
     return (
+        <DraggableHandle handleClassName="handle1" containerStyle={{ top: '50px', left: '750px' }}>
             <div className="log-container">
                 <div className="log-header">
                     <button onClick={copyAllText} onTouchStart={copyAllText} >Copy All Text</button>
                     <button>⚙️</button> {/* Placeholder for settings */}
-                    <button  onClick={openModal} onTouchStart={openModal}>Full Logs</button>
+                    <button onClick={openModal} onTouchStart={openModal}>Full Logs</button>
                 </div>
                 <div className="log-body" ref={logContainerRef}>
                     {visibleLogs.map(log => (
@@ -113,6 +116,7 @@ const LogDisplay = ({ logs, gid }) => {
                     </div>
                 </Modal>
             </div>
+        </DraggableHandle>
 
     );
 };

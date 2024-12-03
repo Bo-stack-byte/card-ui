@@ -18,21 +18,22 @@
   </form>
 
 </div>
-<script>
-const url = new URL(window.location.href);
-const params = new URLSearchParams(url.search);
-
-const board = params.get('board');
-if (board && board.length > 0) {
-  document.getElementById("specialtext").value = board;
-  document.getElementById("special").style.display = "inline";
-  document.getElementById("normal").style.display = "none";
-}
-
-</script>
 
 <div style="display:inline" id="normal" />
 
+<script>
+  const url = new URL(window.location.href);
+  const params = new URLSearchParams(url.search);
+  
+  const board = params.get('board');
+  if (board && board.length > 0) {
+    document.getElementById("specialtext").value = board;
+    document.getElementById("special").style.display = "inline";
+    document.getElementById("normal").style.display = "none";
+  }
+  
+  </script>
+  
 <h2>Creative Mode</h3>
 
 <p>Creative mode can absolutely create situations not yet handled by the current engine.</p>
