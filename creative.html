@@ -1,14 +1,6 @@
 <hr>
-<h1>Creative Mode</h1>
-
-<p>Creative mode can absolutely create situations not yet handled by the current engine.</p>
-
-Enter the board state and press "go" underneath. Make your own down below, or use a sample
-
-<h2>Sample Scenarios</h2>
-
-<span style="display:none" id="special" />
-<h3>Custom Test</h3>
+<div style="display:none" id="special" >
+<h2>Custom Test</h3>
 <p>Someone linked you to this test.</p>
 <p>It was their responsibility to verify that the behavior is correct and they're using this as a visual demonstration.</p>
 <p>This simulator has bugs, and even if it didn't, it's should not be cited as truth.</p>
@@ -25,7 +17,7 @@ Enter the board state and press "go" underneath. Make your own down below, or us
     <input type=submit value="Press here to begin" />
   </form>
 
-</span>
+</div>
 <script>
 const url = new URL(window.location.href);
 const params = new URLSearchParams(url.search);
@@ -34,9 +26,21 @@ const board = params.get('board');
 if (board && board.length > 0) {
   document.getElementById("specialtext").value = board;
   document.getElementById("special").style.display = "inline";
+  document.getElementById("normal").style.display = "none";
 }
 
 </script>
+
+<div style="display:inline" id="normal" />
+
+<h2>Creative Modet</h3>
+
+<p>Creative mode can absolutely create situations not yet handled by the current engine.</p>
+
+Enter the board state and press "go" underneath. Make your own down below, or use a sample
+
+<h2>Sample Scenarios</h2>
+
 
 
 <h3>Token Test</h3>
@@ -138,3 +142,4 @@ VERSION:2
 #Lines with # are comments and ignored.
 
 </textarea> <br> <input type=submit value=go /> </form>
+</div>

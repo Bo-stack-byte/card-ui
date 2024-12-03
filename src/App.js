@@ -14,6 +14,7 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
+// Visualizer v0.5.9 prepare for better UI, more card images
 // Visualizer v0.5.8 show off creative mode, with warnings
 // Visualizer v0.5.7 include ST19
 // Visualizer v0.5.6 proper orientation on both parts?
@@ -129,28 +130,6 @@ function TableTop({ response }) {
       </div>
     );
   }
-  /*
-    let _response = response ? JSON.parse(response) : null;
-    let me_p1 = (_response && _response.p2 && _response.p2.moves === null);
-    let p1 = _response ? (_response.p1) : "";
-    let p2 = _response ? (_response.p2) : "";
-  
-    console.log("moves", p1.moves, p2.moves);
-    //  console.log("in table, p1 is ", p1);;
-  
-    if (me_p1) {
-      return (
-        <div className="table">
-          <UserField pnum="p2" place="north" json={response && p2} />
-          <UserField pnum="p1" place="south" json={response && p1} />
-        </div>);
-    }
-    return (
-      <div className="table">
-        <UserField pnum="p1" place="north" json={response && p1} />
-        <UserField pnum="p2" place="south" json={response && p2} />
-      </div>);
-  */
 }
 
 const PlayerArea = ({ player, className, bottom }) => {
@@ -165,10 +144,12 @@ const PlayerArea = ({ player, className, bottom }) => {
   console.log(103, player);
   return (
     <div className={`player-area ${className}`}
-      style={{ position: 'absolute', 
-        top: bottom ? '1100px' : '1080px', 
+      style={{
+        position: 'absolute',
+        top: bottom ? '1100px' : '1080px',
         left: '1px',
-        height: '0px' }} >
+        height: '0px'
+      }} >
       <div className="top-element">
         <Reveal pile={player.reveal} />
       </div>
@@ -359,38 +340,6 @@ const Reveal = ({ pile }) => {
 
 };
 
-//const imageSrc = imagesContext(`./cards/fd-${selectedState}.png`);
-//
-//  const [response, setResponse] = useState('');
-//  console.log("blob names is " + blobNames);
-// console.log(blobNames);
-// console.log(JSON.stringify(blobNames));
-/*
-if (!blobNames) return
-
-let self = true;
-let reveal = blobNames.cards;
-if (!reveal) {
-}
-
-return (
- <div className="reveal">
-   <table>
-     <tbody>
-       <tr>
-
-         {reveal && reveal.map((blobName, index) => (
-           <td key={uuidv4()} width="10px">
-             XXXXXX <Card key={uuidv4()} blobName={blobName} />
-           </td>
-         ))}
-       </tr>
-     </tbody>
-   </table>
- </div>
-);
-};
-*/
 
 const Trash = ({ trash, x, y }) => (
 
@@ -565,6 +514,28 @@ function InputBox({ onSendMessage }) {
       }
       const parsedOptions = obj[pn].moves;
 
+      // cards[0] = 
+      let cards = {};
+      for (let opts of parsedOptions) {
+        let cmd = opts.command;
+        let text = opts.text;
+        let words = cmd.split(" ");
+        switch (cmd.substring(0, 3)) {
+          case "EVO": // EVO hand instance cost instance2
+            let [_, handindex, instance, cost, instance2] = words;
+            if (!cards[handindex]) cards[handindex] = [];
+            let c = cards[handindex];
+            c.push({ command: cmd, text: text });
+            break;
+          case "EVO": // EVO hand instance cost instance2
+            [_, handindex, instance, cost, instance2] = words;
+            if (!cards[handindex]) cards[handindex] = [];
+            c = cards[handindex];
+            c.push({ command: cmd, text: text });
+            break;
+
+        }
+      }
       //      console.log("XXXXXXX");      console.log(parsedOptions);      console.log("YYYYYYY");
 
       setSelectOptions(parsedOptions); // Update select options

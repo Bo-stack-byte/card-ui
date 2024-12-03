@@ -281,7 +281,7 @@
 
 @media (max-width: 768px) {
   .modal-content {
-      transform: scale(1.5); 
+      transform: scale(3.5); 
   }
 }
 /*
