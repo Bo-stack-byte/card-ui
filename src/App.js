@@ -14,6 +14,7 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
+// Visualizer v0.6.0 context menus
 // Visualizer v0.5.10 both log windows start fixed but are draggable *AND* scrollable
 // Visualizer v0.5.9 prepare for better UI, more card images
 // Visualizer v0.5.8 show off creative mode, with warnings
@@ -63,6 +64,28 @@ export const CardClickProvider = ({ children }) => {
 };
 */
 
+export const FormContext = createContext();
+
+const params = new URLSearchParams(window.location.search);
+let _pid = params.get("pid");
+let _gid = params.get("gid");
+
+export const FormProvider = ({ children }) => {
+  const [formState, setFormState] = useState({
+    gid: _gid,
+    pid: _pid,
+    message: 'json',
+    selectedValue: '',
+    selectOptions: [],
+    multiple: false,
+    last_id: -1
+  });
+  return (
+    <FormContext.Provider value={{ formState, setFormState }}>
+      {children}
+    </FormContext.Provider>
+  );
+};
 
 
 const CardClickContext = createContext();
@@ -92,24 +115,24 @@ const App = () => {
     setMessage(newMessage);
   };
 
-
   return (
     <div className="game-field">
-      <div className="top-element" style={{ zIndex: 12000 }}>
-        <InputBox onSendMessage={handleSendMessage} />
-      </div>
-      <CardClickProvider>
-        <TableTop response={message} onSendMessage={handleSendMessage} />
-        <CardModalController />
-      </CardClickProvider>
+      <FormProvider>
+        <div className="top-element" style={{ zIndex: 12000 }}>
+          <InputBox onSendMessage={handleSendMessage} />
+        </div>
+        <CardClickProvider>
+          <TableTop response={message} onSendMessage={handleSendMessage} />
+          <CardModalController />
+        </CardClickProvider>
+      </FormProvider>
     </div>
   );
 };
 
 const CardModalController = () => {
   const { selectedImage, isModalOpen, closeModal } = useCardClick();
-  console.log('ModalController re-render', { selectedImage, isModalOpen });
-  console.log("xxxx " + selectedImage + "fffff");
+  //  console.log('ModalController re-render', { selectedImage, isModalOpen });
   return (<CardModal imageUrl={selectedImage} isOpen={isModalOpen} onClose={closeModal} />);
 };
 
@@ -141,7 +164,60 @@ const PlayerArea = ({ player, className, bottom }) => {
   let width = 800;
   let height = 1120;
   let bot = (bottom === 1);
-  console.log(103, player);
+
+  // cards[0] = 
+  let cards = [];
+  let instances = [];
+  let handindex, instance, instance2;
+  let c, i;
+  if (player.moves)
+    for (let opts of player.moves) {
+      let cmd = opts.command;
+      let text = opts.text;
+      let words = cmd.split(" ");
+      switch (cmd.substring(0, 3)) {
+        case "EVO": // EVO hand instance cost instance2
+          //let [, handindex, instance, cost, instance2] = words;
+          [, handindex, instance, , instance2] = words;
+          if (!cards[handindex]) cards[handindex] = [];
+          c = cards[handindex];
+          c.push({ command: cmd, text: text });
+          if (false) { // let things we can evo into have a link
+            if (!instances[instance]) instances[instance] = [];
+            i = instances[instance];
+            i.push({ command: cmd, text: text });
+            if (instance2) {
+              if (!instances[instance2]) instances[instance2] = [];
+              let i = instances[instance2];
+              i.push({ command: cmd, text: text });
+            }
+          }
+          break;
+        case "PLA": // ...EVO hand instance cost instance2
+          [, handindex] = words;
+          if (!cards[handindex]) cards[handindex] = [];
+          c = cards[handindex];
+          c.push({ command: cmd, text: text });
+          break;
+        case "ATT": // ...EVO hand instance cost instance2
+          [, instance,] = words;
+          if (!instances[instance]) instances[instance] = [];
+          i = instances[instance];
+          i.push({ command: cmd, text: text });
+          break;
+        case "MAI": // ...EVO hand instance cost instance2
+          [, instance] = words;
+          if (!instances[instance]) instances[instance] = [];
+          i = instances[instance];
+          i.push({ command: cmd, text: text });
+          break;
+        default:
+          console.log(191, "FAILURE " + cmd);
+          break;
+
+      }
+    }
+
   return (
     <div className={`player-area ${className}`}
       style={{
@@ -154,11 +230,11 @@ const PlayerArea = ({ player, className, bottom }) => {
         <Reveal pile={player.reveal} />
       </div>
 
-      <EggZone eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
+      <EggZone moves={instances} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
       <Deck bottom={bottom} x={bot ? 670 : 25} y={bot ? -400 : -875} name={"deck"} pile={player.deck} card="back" />
       <Trash trash={player.trash} x={bot ? 670 : 25} y={bot ? -225 : -1050} />
-      <Field field={player.field} y={bot ? -450 : -800} />
-      <Hand hand={player.hand} _y={bot ? -40 : -1200} />
+      <Field moves={instances} field={player.field} y={bot ? -450 : -800} />
+      <Hand moves={cards} hand={player.hand} _y={bot ? -40 : -1200} />
       <Security security={player.security} x={bot ? -20 : width - 100} y={bot ? -400 : -800} rot={bot ? 270 : 90} />
       <Deck bottom={bottom} x={bot ? -40 : width - 60} y={bot ? -230 : -1050} name={"eggs"} pile={player.eggs} card="eggback" />
     </div>
@@ -200,39 +276,68 @@ const EggZone = ({ eggzone, x, y }) => {
   return (<Instance key={uuidv4()} instance={eggzone} x={x} y={y} />);
 };
 
-const Instance = ({ instance, x, y }) => {
+const Instance = ({ moves, instance, x, y }) => {
   ///  console.log(`inside instance ${x} ${y}`);
-  console.log("instance is");
-  console.log(instance);
+
+  const [showMenu, setShowMenu] = useState(false);
+
   let count = instance.stack.length;
   let delta = 25; //  - count * 3;
   if (count > 4) delta -= count; // scrunch cards a bit if stack is big
-  console.error("OVERRIDE DELTA");
+  console.warn("OVERRIDE DELTA");
   delta = 40;
   // console.log(`count is ${count} delta is ${delta}`);
   let top = y + delta * (count - 1);
 
+  const { formState, setFormState } = useContext(FormContext);
+  const doButton = (e) => {
+    console.log(275, "BUTTON", e.target.value);
+    let value = e.target.value;
+    setFormState({
+      ...formState,
+      selectedValue: value,
+    });
+    setTimeout(() => document.getElementById("send").click(), 1);
+  }
+
+  const handleInstanceCardClick = () => {
+    console.log(350, showMenu);
+    setShowMenu(!showMenu);
+    //onCardAction(card);
+  };
+  const instanceStyle = {
+    position: 'absolute', left: `${x}px`, top: `${top}px`, zIndex: 90,
+  };
+
+  let fn = moves ? handleInstanceCardClick : undefined;
+
   return (
-    <div className="wrapper">
+    <div className={`wrapper ${moves ? 'card-action' : ''}`}  >
+
       <div className="dp-overlay" dangerouslySetInnerHTML={{ __html: typeof instance.dp === "number" ? `${instance.dp} DP` : null }} style={{ left: `${x}px`, top: `${y - 30}px` }} />
-      <div className="detail-overlay" dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
-      <div>
+      <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
+      <div onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
         {instance.stack.map((card, index) => (
-          <Card key={uuidv4()} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index == count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card key={uuidv4()} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index == count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
+      {showMenu && (<div className="menu" style={instanceStyle}  >
+        {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
+        {/*        <button onClick={undefined}>See Instance</button> */}
+      </div>)}
+
     </div>
   )
 };
 
 
-const Field = ({ field, y, }) => {
+const Field = ({ moves, field, y, }) => {
   return (
 
     <div className="field">
       {field.map((instance, index) => (
         <div className="field-instance" key={uuidv4()}>
-          <Instance key={uuidv4()} instance={instance} x={200 + index * 130} y={y} />
+          <Instance key={uuidv4()} moves={moves[instance.id]} instance={instance} x={200 + index * 130} y={y} />
         </div>
       ))}
     </div>
@@ -243,58 +348,81 @@ function x(x) { return x; }
 function y(y) { return y; }
 
 
-const Hand = ({ hand, _y }) => {
+const Hand = ({ moves, hand, _y }) => {
 
   if (!hand.cards) hand.cards = Array(hand.count).fill("back");
 
-
-  let card_width = 80;
+  // if x is 0 for any card it gets misaligned
+  let card_width = 98;
   if (hand.count > 8) (card_width -= hand.count);
   if (hand.count > 12) (card_width -= hand.count);
+  if (hand.count * card_width > 790) { card_width = 790 / hand.count; }
 
-  const center = 300; //??
-  const width = hand.count * 50;
-  const left = center - width / 2;
+  const center = 400; //??
+  const width = hand.count * card_width;
+  const left = (center - width / 2) || 1;
   console.log(left, width, center);
 
   return (
     <div className="hand">
       {hand.cards.map((card, index) => (
         /*        <CardClickProvider> */
-        <Card key={uuidv4()} card={card} x={x(left + card_width * index)} y={y(_y)} z={50} click={true} />
+        <Card key={uuidv4()} moves={moves[index]} card={card} x={x(left + card_width * index)} y={y(_y)} z={50} click={true} />
         /*        </CardClickProvider> */
       ))}
     </div>
   );
 };
 
-const Card = ({ card, x, y, z, rotate, click }) => {
+const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
+  const [showMenu, setShowMenu] = useState(false);
   //  const [isEnlarged, setIsEnlarged] = useState(false);
 
-  /*
-  const handleClick = () => {
-      console.log("CLICK");
-      setIsEnlarged(true);
-    }
-  
-          {isEnlarged && ( 
-                <img src={imagesContext(card)}     alt={card}   className="card" style={{position: 'absolute', scale:'500%', left: `${600}px`, top: `${-600}px`, zIndex:z }} />
-        )}
-  */
+  const { formState, setFormState } = useContext(FormContext);
+  const doButton = (e) => {
+    console.log(371, "BUTTON", e.target.value);
+    let value = e.target.value;
+    setFormState({
+      ...formState,
+      selectedValue: value,
+    });
+    setTimeout(() => document.getElementById("send").click(), 1);
+  }
+
   const context = useCardClick();
   const { handleCardClick } = context;
   const absPosition = {
     position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: z,
     transform: `rotate(${rotate}deg)`
   };
+
+  const handleHandCardClick = () => {
+    console.log(350, showMenu);
+    setShowMenu(!showMenu);
+    //onCardAction(card);
+  };
+
   const relPosition = {};
-  let fn = click ? (() => handleCardClick(imagesContext(card))) : undefined;
+  let show_modal = click ? (() => handleCardClick(imagesContext(card))) : undefined;
+  let fn = moves ? handleHandCardClick : show_modal;
+
+
+  if (showMenu) console.log(359, moves);
 
   return (
-    <div>
-      <img onClick={fn} src={imagesContext(card)} alt={card} className="card"
-        style={x ? absPosition : relPosition} />
+    <div onClick={fn} style={{ position: "relative" }}
+    >
+      <img src={imagesContext(card)} alt={card}
+        style={x ? absPosition : relPosition}
+
+        className={`card ${moves ? 'card-action' : ''}`}
+      />
+      {showMenu && (<div className="menu" style={absPosition} >
+        {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
+        <button onClick={show_modal}>See Card</button>
+      </div>)}
+
     </div >
   );
 
@@ -395,8 +523,10 @@ function InputBox({ onSendMessage }) {
   const params = new URLSearchParams(window.location.search);
   let _pid = params.get("pid");
   let _gid = params.get("gid");
-  console.log("iput box _gid is " + _gid);
 
+
+  const { formState, setFormState } = useContext(FormContext);
+  /*
   const [formState, setFormState] = useState(
     {
       gid: _gid,
@@ -407,7 +537,7 @@ function InputBox({ onSendMessage }) {
       multiple: false,
       last_id: -1
     });
-
+*/
   const handleChange = (event) => {
 
     setFormState({
@@ -500,6 +630,7 @@ function InputBox({ onSendMessage }) {
         }
       }
 
+
       //      console.log("+++");      console.log(formState);
       let pn = 'p' + formState.pid;
       if (!obj[pn]) {
@@ -512,31 +643,8 @@ function InputBox({ onSendMessage }) {
       }
       const parsedOptions = obj[pn].moves;
 
-      // cards[0] = 
-      let cards = {};
-      for (let opts of parsedOptions) {
-        let cmd = opts.command;
-        let text = opts.text;
-        let words = cmd.split(" ");
-        switch (cmd.substring(0, 3)) {
-          case "EVO": // EVO hand instance cost instance2
-            //let [, handindex, instance, cost, instance2] = words;
-            let [, handindex, , ] = words;
-            if (!cards[handindex]) cards[handindex] = [];
-            let c = cards[handindex];
-            c.push({ command: cmd, text: text });
-            break;
-          case "PLAY": // ...EVO hand instance cost instance2
-            [, handindex, , , ] = words;
-            if (!cards[handindex]) cards[handindex] = [];
-            c = cards[handindex];
-            c.push({ command: cmd, text: text });
-            break;
-          default:
-            break;
+      //setDoableActions( [cards, instances ] );
 
-        }
-      }
       //      console.log("XXXXXXX");      console.log(parsedOptions);      console.log("YYYYYYY");
 
       setSelectOptions(parsedOptions); // Update select options
@@ -701,8 +809,6 @@ function InputBox({ onSendMessage }) {
 
   };
 
-  console.log("at ted gid is " + _gid);
-
   return (
     <div>
       <ClickableDraggable>
@@ -768,8 +874,10 @@ function InputBox({ onSendMessage }) {
 
         </div>
       </ClickableDraggable>
-      <Draggable cancel="touchstart">
+      <Draggable cancel=".no-drag">
         <div className={`popup ${messages.length > 0 ? 'show' : 'hide'}`} onClick={handleLogClick}>
+          <button className="no-drag" onClick={handleLogClick}>[X]</button>
+          <br />
           {messages.length > 0 && messages[0]}
         </div>
       </Draggable>

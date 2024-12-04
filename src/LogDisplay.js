@@ -38,8 +38,6 @@ const LogDisplay = ({ logs, gid }) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [fullLogs, setFullLogs] = useState('');
-    console.log("gid is ");
-    console.log(gid);
 
     const openModal = async () => {
         setIsModalOpen(true);

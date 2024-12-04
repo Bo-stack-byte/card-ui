@@ -53,7 +53,60 @@
   position: absolute; /* Ensure absolute positioning */
   background-color: lightblue;
   border: 0.5px solid #444;
+  transition: all 0.3s ease;
 }
+
+
+.card-action {
+  outline: 3px solid rgba(255, 215, 0, 1); /* Explicit aura with outline */
+  cursor: pointer; /* Change pointer */
+}
+
+.card-acti32323on {
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); /* Glow effect */
+  cursor: pointer; /* Change pointer */
+}
+
+.menuJUST_THE_SAME {
+  position: absolute;
+  bottom: 80%; /* Position the bottom of the menu 20% down the card */
+  left: 50%;
+  transform: translateX(-90%); /* Center the menu horizontally */
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
+}
+
+
+
+.menu {
+  position: absolute;
+  top: -120%;
+  left: 50%;
+  width: 100px; 
+  transform: translateY(-50%);
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 1000; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.menuOLD {
+/*  display: none;*/
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.menu.visible {
+  display: block;
+}
+
 
 .dp-overlay {
   position: absolute; /* Position the text on top */
