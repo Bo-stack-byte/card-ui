@@ -50,19 +50,21 @@ TKN-Familiar TKN-Familiar TKN-Familiar TKN-Familiar`;
       const millenniummon = "BT19-006 BT19-006 BT19-006 BT19-006 EX1-066 EX1-066 EX1-066 BT18-013 BT18-013 BT18-013 BT19-069 BT19-069 BT19-069 BT14-069 BT14-069 BT18-007 BT18-007 BT18-007 BT18-007 BT3-077 BT3-077 BT19-066 BT19-066 BT19-066 BT19-066 BT18-015 BT18-015 BT18-015 BT19-070 BT19-070 BT19-070 BT18-073 BT18-073 BT18-073 BT18-073 BT19-065 BT18-019 BT18-019 BT18-019 BT18-019 BT19-075 BT19-075 BT19-087 BT19-087 BT19-087 BT5-107 BT5-107 BT19-068 BT19-068 BT19-068 BT19-099 BT19-099 BT19-099 BT19-101"
 //f from       https://digimoncard.io/deck/millenniummon-105924 ?
     
+      const shinegrey = '["Exported from https://digimoncard.io/deck/shinegreymon-106539", "BT12-034", "BT12-034", "BT12-034", "BT12-034", "BT13-008", "BT13-008", "BT13-008", "BT13-008", "BT17-029", "BT17-029", "BT17-029", "BT17-029", "BT17-099", "BT17-099", "BT12-038", "BT12-038", "BT12-038", "BT13-012", "BT17-033", "BT17-033", "BT17-033", "BT17-033", "BT12-092", "BT12-092", "BT12-092", "BT13-095", "BT13-095", "BT13-095", "BT17-087", "BT17-087", "BT17-087", "BT13-015", "BT13-015", "BT13-015", "BT17-037", "BT17-037", "BT17-037", "BT17-037", "BT12-043", "BT12-043", "BT17-039", "BT17-039", "BT17-039", "BT17-039", "BT13-020", "BT17-041", "BT17-041", "BT17-041", "P-037", "P-037", "BT12-003", "BT12-003", "BT12-003", "BT12-003"]';
       let presets = [
-        { name: "RED Gallantmon ST7", deck: st7 },
-        { name: "BLUE Ulforceveedramon ST8", deck: st8 },
-        { name: "BLACK Dragon of Courage ST15", deck: st15 },
-        { name: "PURPLE Wolf of Friendship ST16", deck: st16 },
-        { name: "GREEN Double Typhoon ST17", deck: st17 },
-        { name: "GREEN Vortex Warrior ST18", deck: st18 },
-        { name: "YELLOW Fable Waltz ST19", deck: st19 },
+        { name: "ST7 RED Gallantmon", deck: st7 },
+        { name: "ST8 BLUE Ulforceveedramon", deck: st8 },
+        { name: "ST15 BLACK Dragon of Courage", deck: st15 },
+        { name: "ST16 PURPLE Wolf of Friendship", deck: st16 },
+        { name: "ST17 GREEN Double Typhoon", deck: st17 },
+        { name: "ST18 GREEN Vortex Warrior", deck: st18 },
+        { name: "ST19 YELLOW Fable Waltz", deck: st19 },
         { name: "CUSTOM yellow-ish Shield Cat", deck: cs1 },
         { name: "CUSTOM blue-ish Sword Dog", deck: cs2 },
-        { name: "GREEN Royal Base Simple", deck: royal_base1 },
+        { name: "Royal Base GREEN Simple", deck: royal_base1 },
         { name: "!! EXPERIMENTAL Royal Base Complex", deck: royal_base2 },
         { name: "!! EXPERIMENTAL Millenniummon", deck: millenniummon },
+        { name: "!! EXPERIMENTAL Shinegreymon", deck: shinegrey },
       ];
     </script>
 
@@ -127,8 +129,8 @@ TKN-Familiar TKN-Familiar TKN-Familiar TKN-Familiar`;
                 p2deck.textContent = selectedDeck.deck;
               });
               // set to default
-              sel1.value = "GREEN Vortex Warrior ST18";
-              sel2.value = "PURPLE Wolf of Friendship ST16";
+              sel1.value = "Royal Base GREEN Simple";
+              sel2.value = "ST19 YELLOW Fable Waltz";
               var event = new Event('change');
               sel1.dispatchEvent(event);
               sel2.dispatchEvent(event);
