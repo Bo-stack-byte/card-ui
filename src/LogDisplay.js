@@ -144,7 +144,7 @@ const LogEntry = ({ log }) => {
     if (!log) return (<hr />);
     let layer = log.layer;
     let chainimg = getChainImage(layer);
-    let img = layer ? (<img valign="bottom" src={chainimg} alt={`P${layer}`} height="20px" width="20px" />) : " - ";
+    let img = layer ? (<img valign="bottom" src={chainimg} alt={`L${layer}`} height="20px" width="20px" />) : " - ";
     if (log.action) {
         return (<div className="log-action"> {img}  {log.action}</div>);
     }
