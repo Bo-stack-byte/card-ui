@@ -14,6 +14,7 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 
+// Visualizer v0.6.1 show search
 // Visualizer v0.6.0 context menus
 // Visualizer v0.5.10 both log windows start fixed but are draggable *AND* scrollable
 // Visualizer v0.5.9 prepare for better UI, more card images
@@ -228,6 +229,9 @@ const PlayerArea = ({ player, className, bottom }) => {
       }} >
       <div className="top-element">
         <Reveal pile={player.reveal} />
+      </div>
+      <div className="top-element">
+        <Reveal pile={player.search} />
       </div>
 
       <EggZone moves={instances} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
