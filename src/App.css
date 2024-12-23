@@ -86,7 +86,7 @@
   top: -120%;
   left: 50%;
   width: 100px; 
-  transform: translateY(-50%);
+  transform: translateY(-70%) translateX(-20%);
   border: 1px solid #ccc;
   padding: 10px;
   z-index: 1000; 

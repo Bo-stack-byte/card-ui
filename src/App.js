@@ -13,7 +13,10 @@ import Draggable from 'react-draggable';
 import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
+import RecursiveMenu from './RecursiveMenu';
 
+
+// Visualizer v0.6.2 better context menus
 // Visualizer v0.6.1 show search
 // Visualizer v0.6.0 context menus
 // Visualizer v0.5.10 both log windows start fixed but are draggable *AND* scrollable
@@ -109,7 +112,7 @@ export const CardClickProvider = ({ children }) => {
 const initialData = {}
 
 const App = () => {
-  const [data] = useState(initialData);
+ // const [data] = useState(initialData);
   const [message, setMessage] = useState(''); // Optional state for UI logic
 
   const handleSendMessage = (newMessage) => {
@@ -170,7 +173,7 @@ const PlayerArea = ({ player, className, bottom }) => {
   let cards = [];
   let instances = [];
   let handindex, instance, instance2;
-  let c, i;
+  let c, i, m, target, cost;
   if (player.moves)
     for (let opts of player.moves) {
       let cmd = opts.command;
@@ -179,10 +182,19 @@ const PlayerArea = ({ player, className, bottom }) => {
       switch (cmd.substring(0, 3)) {
         case "EVO": // EVO hand instance cost instance2
           //let [, handindex, instance, cost, instance2] = words;
+          if ((m = text.match(/.*volve (.*) onto (.*) \((.*)\)/i))) {
+            [, , target, cost] = m;
+          }
           [, handindex, instance, , instance2] = words;
+          instance2 = parseInt(instance2);
+
           if (!cards[handindex]) cards[handindex] = [];
           c = cards[handindex];
-          c.push({ command: cmd, text: text });
+
+          let e = c.find(x => x.text === 'Evolve on' );
+          if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
+          e.submenu.push({ text: `${target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+
           if (false) { // let things we can evo into have a link
             if (!instances[instance]) instances[instance] = [];
             i = instances[instance];
@@ -252,7 +264,7 @@ const Deck = ({ pile, x, y, card, name, bottom }) => {
   //console.log("rendering " + bottom + " pile " + card + " " + x + " " + y + " length "); // + pile.length);
 
   //return (<span>0</span>);
-  if (!pile || pile.count == 0) {
+  if (!pile || pile.count === 0) {
     return (<span>0</span>);
   }
   //         <Card key={index} card={card} x={45} y={-180 - index*30} z={index} style={{ top: '80%', left: `${10 + index * 15}%` }} />
@@ -295,6 +307,7 @@ const Instance = ({ moves, instance, x, y }) => {
 
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
+    setShowMenu(false);
     console.log(275, "BUTTON", e.target.value);
     let value = e.target.value;
     setFormState({
@@ -320,9 +333,10 @@ const Instance = ({ moves, instance, x, y }) => {
 
       <div className="dp-overlay" dangerouslySetInnerHTML={{ __html: typeof instance.dp === "number" ? `${instance.dp} DP` : null }} style={{ left: `${x}px`, top: `${y - 30}px` }} />
       <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
+      <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.id }} style={{  width: '20px',  textAlign: `right`, left: `${x+80}px`, bottom: `${-y - 30}px` }} />
       <div onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
         {instance.stack.map((card, index) => (
-          <Card key={uuidv4()} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index == count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card key={uuidv4()} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index === count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
       {showMenu && (<div className="menu" style={instanceStyle}  >
@@ -380,6 +394,19 @@ const Hand = ({ moves, hand, _y }) => {
 
 const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
+  const [currentLevel, setCurrentLevel] = useState(0); // State to track the current menu level
+  const [menuPath, setMenuPath] = useState([moves]); // State to track the path to the current menu
+
+  const handleSubmenuOpen = (submenu) => {
+    setMenuPath([...menuPath, submenu]);
+    setCurrentLevel(currentLevel + 1);
+  };
+  const handleBack = () => {
+    setMenuPath(menuPath.slice(0, -1));
+    setCurrentLevel(currentLevel - 1);
+  };
+
+
   const [showMenu, setShowMenu] = useState(false);
   //  const [isEnlarged, setIsEnlarged] = useState(false);
 
@@ -401,18 +428,30 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
     transform: `rotate(${rotate}deg)`
   };
 
+  const closeMenu = () => {
+    setShowMenu(false);
+  }
+
   const handleHandCardClick = () => {
     console.log(350, showMenu);
-    setShowMenu(!showMenu);
+    if (!showMenu) setShowMenu(!showMenu);
     //onCardAction(card);
   };
 
   const relPosition = {};
-  let show_modal = click ? (() => handleCardClick(imagesContext(card))) : undefined;
+  let show_modal = click ? (() => { closeMenu(); handleCardClick(imagesContext(card))}) : undefined;
   let fn = moves ? handleHandCardClick : show_modal;
 
 
   if (showMenu) console.log(359, moves);
+
+
+  const getParentText = () => {
+    if (currentLevel > 0 && menuPath[currentLevel - 1].length > 0) {
+      return menuPath[currentLevel - 1][0].text; // Get the text field of the parent level
+    }
+    return 'Back';
+  }
 
   return (
     <div onClick={fn} style={{ position: "relative" }}
@@ -423,7 +462,21 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
         className={`card ${moves ? 'card-action' : ''}`}
       />
       {showMenu && (<div className="menu" style={absPosition} >
-        {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
+        <div >
+          {(currentLevel > 0 && (
+            <button onClick={handleBack}>{getParentText()}</button>
+          )) || (
+              <button onClick={closeMenu}>×</button>
+            )}
+          <RecursiveMenu
+            data={menuPath[currentLevel]}
+            doButton={doButton}
+            handleSubmenuOpen={handleSubmenuOpen}
+          />
+          <button id="send" style={{ display: 'none' }}>Send</button>
+        </div>
+
+
         <button onClick={show_modal}>See Card</button>
       </div>)}
 
@@ -483,7 +536,7 @@ const Security = ({ security, x, y, rot }) => {
   let cards = security.cards;
   //  cards =  ["BT19-052@GREEN,BLACK","BT18-046@GREEN,BLACK","BT18-046@GREEN,BLACK","back","back"];
   let count = cards.length;
-  cards = cards.map(c => c == "DOWN" ? "back" : c);
+  cards = cards.map(c => c === "DOWN" ? "back" : c);
 
   let delta = 30;
   if (count > 6) delta -= count;
@@ -517,12 +570,12 @@ const socket4 = io(socketurl);
 
 function InputBox({ onSendMessage }) {
 
-  const [hasInitialized, setHasInitialized] = useState(false);
+//  const [hasInitialized, setHasInitialized] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [messages, setMessages] = useState([]);
   const [masterQueue, setMasterQueue] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [response, setResponse] = useState(null);
+//  const [response, setResponse] = useState(null);
 
   const params = new URLSearchParams(window.location.search);
   let _pid = params.get("pid");

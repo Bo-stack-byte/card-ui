@@ -17,7 +17,7 @@ export const populate_tree = (tree) => {
     let effects = document.getElementById("effects");
     if (effects) {
         effects.style.display = "none";
-        for (let i of [1, 2, 3, 4]) {
+        for (let i of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
             let e = tree[i];
             // console.log(`e ${i} is `);
             if (e) {
