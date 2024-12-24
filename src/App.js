@@ -16,7 +16,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 
 
-// Visualizer v0.6.2 better context menus
+// Visualizer v0.6.2.1 better context menus
 // Visualizer v0.6.1 show search
 // Visualizer v0.6.0 context menus
 // Visualizer v0.5.10 both log windows start fixed but are draggable *AND* scrollable
@@ -112,7 +112,7 @@ export const CardClickProvider = ({ children }) => {
 const initialData = {}
 
 const App = () => {
- // const [data] = useState(initialData);
+  // const [data] = useState(initialData);
   const [message, setMessage] = useState(''); // Optional state for UI logic
 
   const handleSendMessage = (newMessage) => {
@@ -172,6 +172,7 @@ const PlayerArea = ({ player, className, bottom }) => {
   // cards[0] = 
   let cards = [];
   let instances = [];
+  let eggs = [];
   let handindex, instance, instance2;
   let c, i, m, target, cost;
   if (player.moves)
@@ -191,7 +192,7 @@ const PlayerArea = ({ player, className, bottom }) => {
           if (!cards[handindex]) cards[handindex] = [];
           c = cards[handindex];
 
-          let e = c.find(x => x.text === 'Evolve on' );
+          let e = c.find(x => x.text === 'Evolve on');
           if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
           e.submenu.push({ text: `${target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
 
@@ -224,6 +225,12 @@ const PlayerArea = ({ player, className, bottom }) => {
           i = instances[instance];
           i.push({ command: cmd, text: text });
           break;
+        case "HAT":
+        case "RAI":
+        case "NEX":
+          eggs.push({ command: cmd, text: text });
+          break;
+        case "json": break;
         default:
           console.log(191, "FAILURE " + cmd);
           break;
@@ -246,7 +253,7 @@ const PlayerArea = ({ player, className, bottom }) => {
         <Reveal pile={player.search} />
       </div>
 
-      <EggZone moves={instances} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
+      <EggZone moves={eggs} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
       <Deck bottom={bottom} x={bot ? 670 : 25} y={bot ? -400 : -875} name={"deck"} pile={player.deck} card="back" />
       <Trash trash={player.trash} x={bot ? 670 : 25} y={bot ? -225 : -1050} />
       <Field moves={instances} field={player.field} y={bot ? -450 : -800} />
@@ -286,10 +293,33 @@ const Deck = ({ pile, x, y, card, name, bottom }) => {
     </span>
   );
 }
-const EggZone = ({ eggzone, x, y }) => {
+const EggZone = ({ eggzone, moves, x, y }) => {
+
   console.debug("eggzone area");
-  if (!eggzone) return (<hr />);
-  return (<Instance key={uuidv4()} instance={eggzone} x={x} y={y} />);
+  const style = { position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: 2000 }
+  const { formState, setFormState } = useContext(FormContext);
+
+  const doButton = (e) => {
+    console.log(303, "BUTTON", e.target.value);
+    let value = e.target.value;
+    setFormState({
+      ...formState,
+      selectedValue: value,
+    });
+    setTimeout(() => document.getElementById("send").click(), 1);
+  }
+
+  return (
+    <div>
+      {moves.length > 0 && (
+      <div style={style} className="menu">
+        {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
+      </div> 
+      )}
+      {eggzone && (
+        <Instance key={uuidv4()} instance={eggzone} x={x} y={y} />)}
+  </div>
+  )
 };
 
 const Instance = ({ moves, instance, x, y }) => {
@@ -325,6 +355,9 @@ const Instance = ({ moves, instance, x, y }) => {
   const instanceStyle = {
     position: 'absolute', left: `${x}px`, top: `${top}px`, zIndex: 90,
   };
+  const menuStyle = {
+    position: 'absolute', left: `${x}px`, top: `${y + 10}px`, zIndex: 90,
+  }
 
   let fn = moves ? handleInstanceCardClick : undefined;
 
@@ -333,13 +366,13 @@ const Instance = ({ moves, instance, x, y }) => {
 
       <div className="dp-overlay" dangerouslySetInnerHTML={{ __html: typeof instance.dp === "number" ? `${instance.dp} DP` : null }} style={{ left: `${x}px`, top: `${y - 30}px` }} />
       <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
-      <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.id }} style={{  width: '20px',  textAlign: `right`, left: `${x+80}px`, bottom: `${-y - 30}px` }} />
+      <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.id }} style={{ width: '20px', textAlign: `right`, left: `${x + 80}px`, bottom: `${-y - 30}px` }} />
       <div onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
         {instance.stack.map((card, index) => (
           <Card key={uuidv4()} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index === count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
-      {showMenu && (<div className="menu" style={instanceStyle}  >
+      {showMenu && (<div className="menu" style={menuStyle}  >
         {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
         {/*        <button onClick={undefined}>See Instance</button> */}
       </div>)}
@@ -412,6 +445,7 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
+    setShowMenu(false);
     console.log(371, "BUTTON", e.target.value);
     let value = e.target.value;
     setFormState({
@@ -427,6 +461,9 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
     position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: z,
     transform: `rotate(${rotate}deg)`
   };
+  const menuPosition = {
+    position: 'absolute', left: `${x}px`, bottom: `${y}px`, zIndex: z + 1,
+  };
 
   const closeMenu = () => {
     setShowMenu(false);
@@ -434,12 +471,13 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const handleHandCardClick = () => {
     console.log(350, showMenu);
-    if (!showMenu) setShowMenu(!showMenu);
+     if (!showMenu)
+    setShowMenu(!showMenu);
     //onCardAction(card);
   };
 
   const relPosition = {};
-  let show_modal = click ? (() => { closeMenu(); handleCardClick(imagesContext(card))}) : undefined;
+  let show_modal = click ? (() => { closeMenu(); handleCardClick(imagesContext(card)) }) : undefined;
   let fn = moves ? handleHandCardClick : show_modal;
 
 
@@ -461,7 +499,7 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
         className={`card ${moves ? 'card-action' : ''}`}
       />
-      {showMenu && (<div className="menu" style={absPosition} >
+      {showMenu && (<div className="menu" style={menuPosition} >
         <div >
           {(currentLevel > 0 && (
             <button onClick={handleBack}>{getParentText()}</button>
@@ -570,12 +608,12 @@ const socket4 = io(socketurl);
 
 function InputBox({ onSendMessage }) {
 
-//  const [hasInitialized, setHasInitialized] = useState(false);
+  //  const [hasInitialized, setHasInitialized] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [messages, setMessages] = useState([]);
   const [masterQueue, setMasterQueue] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-//  const [response, setResponse] = useState(null);
+  //  const [response, setResponse] = useState(null);
 
   const params = new URLSearchParams(window.location.search);
   let _pid = params.get("pid");
