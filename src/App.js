@@ -5,7 +5,8 @@ import imagesContext from "./util";
 import io from 'socket.io-client';
 import React, {
   useEffect, useState,
-  createContext, useContext
+  createContext, useContext,
+  useRef
 } from 'react';
 import { StatusWindow, populate_tree } from './StatusWindow';
 import Counter from './Counter';
@@ -14,8 +15,12 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
+import Modal from 'react-modal';
 
 
+// Visualizer v0.6.5 more cards and option pop-ups
+// Visualizer v0.6.4 effect chooser pop-up
+// Visualizer v0.6.3 pop-over on test cases
 // Visualizer v0.6.2.1 better context menus
 // Visualizer v0.6.1 show search
 // Visualizer v0.6.0 context menus
@@ -29,44 +34,6 @@ import RecursiveMenu from './RecursiveMenu';
 // Visualizer v0.5.3 proper modal overlay
 // Visualizer v0.5.2 better game init
 // Visualizer v0.5.1 log window scrolls
-
-/*
-const CardClickContext = createContext();
-export const useCardClick = () => useContext(CardClickContext);
-export const CardClickProvider = ({ children }) => {
-  const handleCardClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
-    setIsModalOpen(true);
-  };
-  setSelectedImage(imageUrl);
-  setIsModalOpen(true);
-  return (
-    <CardClickContext.Provider value={handleCardClick}>
-      {children}
-    </CardClickContext.Provider>
-  );
-};*/
-
-/*
-const CardClickContext = createContext();
-export const useCardClick = () => useContext(CardClickContext);
-export const CardClickProvider = ({ children }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedImage, setSelectedImage] = useState('');
-    const handleCardClick = (imageUrl) => {
-        setSelectedImage(imageUrl);
-        setIsModalOpen(true);
-    };
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
-    return (
-        <CardClickContext.Provider value={{ handleCardClick, selectedImage, isModalOpen, closeModal }}>
-            {children}
-        </CardClickContext.Provider>
-    );
-};
-*/
 
 export const FormContext = createContext();
 
@@ -113,23 +80,66 @@ const initialData = {}
 
 const App = () => {
   // const [data] = useState(initialData);
-  const [message, setMessage] = useState(''); // Optional state for UI logic
-
+  let _text = params.get("text");
+  const [message, setMessage] = useState('');
+  const [text, setText] = useState(_text);
   const handleSendMessage = (newMessage) => {
     setMessage(newMessage);
   };
 
+  const textStyle = {
+    zIndex: 19000, // Ensure the modal has a higher z-index
+    position: 'fixed', // Setting position to fixed
+    width: '500px',
+    height: '500px',
+    textAlign: 'center',
+    fontFamily: 'VT323',
+    fontSize: "35px"
+  }
+
+  let gid = params.get("gid");
+  let test = params.get("test");
+  const proceed = () => {
+
+    console.log(99, "proceed");
+    setText(false);
+    try {
+      console.log(102, "try");
+      const response = fetch(`/game/witness?gid=${gid}&test=${test}&proceed=1`);
+      console.log(104, "did");
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+
   return (
     <div className="game-field">
       <FormProvider>
-        <div className="top-element" style={{ zIndex: 12000 }}>
-          <InputBox onSendMessage={handleSendMessage} />
-        </div>
+        {text && (
+          <div style={textStyle} >
+            <ClickableDraggable className="reveal" style={textStyle}>
+              <div className="reveal" style={textStyle}>
+                <div style={{ backgroundColor: "white" }}>
+                  {text}
+                  <hr />
+                  <button onClick={proceed} onTouchStart={proceed}>Proceed</button>
+                  <button onClick={() => setText(false)} onTouchStart={() => setText(false)}>Run Manually</button>
+                </div>
+              </div>
+            </ClickableDraggable>
+          </div>
+        )}
+
         <CardClickProvider>
+          <div className="top-element" style={{ zIndex: 12000 }}>
+            <InputBox onSendMessage={handleSendMessage} />
+          </div>
           <TableTop response={message} onSendMessage={handleSendMessage} />
           <CardModalController />
         </CardClickProvider>
       </FormProvider>
+
     </div>
   );
 };
@@ -143,109 +153,246 @@ const CardModalController = () => {
 function TableTop({ response }) {
   let _response = response ? JSON.parse(response) : null;
   let data = _response;
+  const { formState, setFormState } = useContext(FormContext);
+
+
+  useEffect(() => {
+    if (formState.selectOptions.length == 0) {
+      setTimeout(() => document.getElementById("send").click(), 1);
+    }
+  }, []);
+
   const params = new URLSearchParams(window.location.search);
   if (data && data.p1 && data.p2) {
     let pid = Number(params.get("pid"));
     let relative_memory = (pid === 1) ? data.p1.relative_memory : data.p2.relative_memory;
     let top = (pid === 1) ? data.p2 : data.p1;
     let bottom = (pid === 1) ? data.p1 : data.p2;
+
+    // show moves; instances are for both players, but "egg" and "hand" only for bottom player
+    let cards = [];
+    let instances = [];
+    let eggs = [];
+    let handindex, instance, instance2;
+    let c, i, m, target, cost;
+    console.log(177, "moves", document.getElementById("send").disabled);
+    if (bottom.moves && document.getElementById("send").disabled == false)
+      for (let opts of bottom.moves) {
+        let cmd = opts.command;
+        let text = opts.text;
+        let target_id = opts.target_id;
+        let name = opts.name;
+        let evo_left = opts.evo_left;
+        let evo_right = opts.evo_right;
+        let evo_target = opts.evo_target;
+        let evo_card = opts.evo_card;
+        let cost = opts.cost;
+        let words = cmd.split(" ");
+        switch (cmd.substring(0, 3)) {
+          case "ExxxVO": // EVO hand instance cost instance2
+            //let [, handindex, instance, cost, instance2] = words;
+            if (evo_card && evo_card.location === "HAND") {
+              handindex = evo_card.id;
+            }
+            instance = evo_left && evo_left.id;
+            instance2 = evo_right && evo_right.id;
+
+            if (!cards[handindex]) cards[handindex] = [];
+            c = cards[handindex];
+
+            let e = c.find(x => x.text === 'Evolve on');
+            if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
+            e.submenu.push({ text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+
+            if (false) { // let things we can evo into have a link
+              if (!instances[instance]) instances[instance] = [];
+              i = instances[instance];
+              i.push({ command: cmd, text: text });
+              if (instance2) {
+                if (!instances[instance2]) instances[instance2] = [];
+                let i = instances[instance2];
+                i.push({ command: cmd, text: text });
+              }
+            }
+            break;
+          case "PLA": // ...EVO hand instance cost instance2
+
+            [, handindex] = words;
+            if (!cards[handindex]) cards[handindex] = [];
+            c = cards[handindex];
+            c.push({ command: cmd, text: text });
+            break;
+          case "ATT": // ...EVO hand instance cost instance2
+            [, instance,] = words;
+            if (!instances[instance]) instances[instance] = [];
+            i = instances[instance];
+            i.push({ command: cmd, text: text });
+            break;
+          case "MAI": // ...EVO hand instance cost instance2
+            [, instance] = words;
+            if (!instances[instance]) instances[instance] = [];
+            i = instances[instance];
+            i.push({ command: cmd, text: text });
+            break;
+          case "HAT":
+          case "RAI":
+          case "NEX":
+            eggs.push({ command: cmd, text: text });
+            break;
+          case "json": break;
+          default:
+            if (evo_card && evo_card.location === "HAND") {
+              handindex = evo_card.id;
+              instance = evo_left && evo_left.id;
+              instance2 = evo_right && evo_right.id;
+
+              if (!cards[handindex]) cards[handindex] = [];
+              c = cards[handindex];
+
+              let e = c.find(x => x.text === 'Evolve on');
+              if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
+              e.submenu.push({ text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+              break;
+            }
+            // do we have target ids?
+            if (!target_id) break;
+            if (target_id.kind === "CardLocation") {
+              if (target_id.location === "HAND") {
+                handindex = Number(target_id.id);
+                if (!cards[handindex]) cards[handindex] = [];
+                c = cards[handindex];
+                c.push({ command: cmd, text: text });
+                // CS1-02
+              }
+            } else {
+              instance = Number(target_id.id);
+              if (!instances[instance]) instances[instance] = [];
+              i = instances[instance];
+              i.push({ command: cmd, text: text });
+            }
+
+            break;
+        }
+      }
+
+    // 2
+    console.log(177, "counts", cards.length, instances.length, eggs.length);
+
     return (
-      <div>
-        <PlayerArea key={5000} player={top} bottom={0} className="bottom" />
+      <div className="zoom">
+        <PlayerArea key={5000} player={top} bottom={0} instanceMoves={instances} className="bottom"
+          handMoves={[]} eggMoves={[]}
+
+        />
         <Counter position={relative_memory} />
-        <PlayerArea key={6000} player={bottom} bottom={1} className="bottom" />
+        <PlayerArea key={6000} player={bottom} bottom={1} instanceMoves={instances}
+          handMoves={cards} eggMoves={eggs}
+          className="bottom" />
       </div>
     );
   }
 }
 
-const PlayerArea = ({ player, className, bottom }) => {
-  if (!player) return;
-  console.log("player area ");
-  console.log(bottom ? " bottom " : " top ");
-  console.log(player.eggzone);
+const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMoves }) => {
   //       <Pile x={800} y={-200} pilelength={player.trash} />
   let width = 800;
-  let height = 1120;
+  let height = 2000;
   let bot = (bottom === 1);
 
-  // cards[0] = 
-  let cards = [];
-  let instances = [];
-  let eggs = [];
-  let handindex, instance, instance2;
-  let c, i, m, target, cost;
-  if (player.moves)
-    for (let opts of player.moves) {
-      let cmd = opts.command;
-      let text = opts.text;
-      let words = cmd.split(" ");
-      switch (cmd.substring(0, 3)) {
-        case "EVO": // EVO hand instance cost instance2
-          //let [, handindex, instance, cost, instance2] = words;
-          if ((m = text.match(/.*volve (.*) onto (.*) \((.*)\)/i))) {
-            [, , target, cost] = m;
-          }
-          [, handindex, instance, , instance2] = words;
-          instance2 = parseInt(instance2);
+  // for evo lines
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    const ctx = canvas.getContext('2d');
 
-          if (!cards[handindex]) cards[handindex] = [];
-          c = cards[handindex];
+    // Set canvas size to parent container
+    canvas.width = 800; //canvas.parentElement.offsetWidth;
+    canvas.height = 1200; //canvas.parentElement.offsetHeight;
+    console.log(285, "canvas", canvas.width, canvas.height);
 
-          let e = c.find(x => x.text === 'Evolve on');
-          if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
-          e.submenu.push({ text: `${target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+    // for drawing lines to show all evos
+    const drawLinesBetweenCards = () => {
+      const cardPairs = [
+        { sourceId: 'card1', targetId: 'card4' },
+        { sourceId: 'card1', targetId: 'card5' },
+        { sourceId: 'card2', targetId: 'card6' }
+      ];
 
-          if (false) { // let things we can evo into have a link
-            if (!instances[instance]) instances[instance] = [];
-            i = instances[instance];
-            i.push({ command: cmd, text: text });
-            if (instance2) {
-              if (!instances[instance2]) instances[instance2] = [];
-              let i = instances[instance2];
-              i.push({ command: cmd, text: text });
-            }
-          }
-          break;
-        case "PLA": // ...EVO hand instance cost instance2
-          [, handindex] = words;
-          if (!cards[handindex]) cards[handindex] = [];
-          c = cards[handindex];
-          c.push({ command: cmd, text: text });
-          break;
-        case "ATT": // ...EVO hand instance cost instance2
-          [, instance,] = words;
-          if (!instances[instance]) instances[instance] = [];
-          i = instances[instance];
-          i.push({ command: cmd, text: text });
-          break;
-        case "MAI": // ...EVO hand instance cost instance2
-          [, instance] = words;
-          if (!instances[instance]) instances[instance] = [];
-          i = instances[instance];
-          i.push({ command: cmd, text: text });
-          break;
-        case "HAT":
-        case "RAI":
-        case "NEX":
-          eggs.push({ command: cmd, text: text });
-          break;
-        case "json": break;
-        default:
-          console.log(191, "FAILURE " + cmd);
-          break;
+      const getCardCenter = (card) => {
+        const rect = card.getBoundingClientRect();
+        return {
+          x: rect.left + rect.width / 2, // container.getBoundingClientRect().left,
+          y: rect.top + rect.height / 2 + 600 - container.getBoundingClientRect().top,
+        };
+      };
 
-      }
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.globalAlpha = 0.5;
+      // ctx.fillStyle = 'blue'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Draw lines between specified pairs
+      ctx.strokeStyle = 'yellow';
+      ctx.lineWidth = 2;
+      cardPairs.forEach(({ sourceId, targetId }) => {
+        const sourceCard = container.querySelector(`#${sourceId}`);
+        const targetCard = container.querySelector(`#${targetId}`);
+        console.log("canvas", sourceCard, targetCard);
+        if (false) {
+          ctx.beginPath();
+          ctx.moveTo(Math.random() * 2000 - 1000, Math.random() * 2000 - 1000);
+          ctx.lineTo(Math.random() * 2000 - 1000, Math.random() * 2000 - 1000);
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 20;
+          ctx.stroke();
+
+        }
+
+        if (sourceCard && targetCard) {
+          const sourceCenter = getCardCenter(sourceCard);
+          const targetCenter = getCardCenter(targetCard);
+          console.log(315, "canvas", sourceCenter, targetCenter);
+          ctx.beginPath();
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 5;
+          ctx.moveTo(sourceCenter.x, sourceCenter.y);
+          ctx.lineTo(targetCenter.x, targetCenter.y);
+          ctx.stroke();
+        }
+      });
+    };
+
+    // Initial draw
+    drawLinesBetweenCards();
+
+    // Optionally, add event listeners to update lines on resize or scroll
+    if (false) {
+      window.addEventListener('resize', drawLinesBetweenCards);
+      window.addEventListener('scroll', drawLinesBetweenCards);
     }
+    // Cleanup event listeners on unmount
+    return () => {
+      window.removeEventListener('resize', drawLinesBetweenCards);
+      window.removeEventListener('scroll', drawLinesBetweenCards);
+    };
+  }, []);
 
+  // evo lines end
+  if (!player) return;
+
+  // cards[0] = 
   return (
-    <div className={`player-area ${className}`}
+    <div className={`player-area ${className}`} ref={containerRef}
       style={{
         position: 'absolute',
         top: bottom ? '1100px' : '1080px',
         left: '1px',
         height: '0px'
       }} >
+      <canvas ref={canvasRef} style={{ pointerEvents: "none", position: 'absolute', top: "-600px", left: 0, zIndex: 4000 }} />
+      {/* Render your <Card> components here or inside nested components */}
+      {/* Add more <Card> components as needed */}
       <div className="top-element">
         <Reveal pile={player.reveal} />
       </div>
@@ -253,11 +400,11 @@ const PlayerArea = ({ player, className, bottom }) => {
         <Reveal pile={player.search} />
       </div>
 
-      <EggZone moves={eggs} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
+      <EggZone moves={eggMoves} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
       <Deck bottom={bottom} x={bot ? 670 : 25} y={bot ? -400 : -875} name={"deck"} pile={player.deck} card="back" />
       <Trash trash={player.trash} x={bot ? 670 : 25} y={bot ? -225 : -1050} />
-      <Field moves={instances} field={player.field} y={bot ? -450 : -800} />
-      <Hand moves={cards} hand={player.hand} _y={bot ? -40 : -1200} />
+      <Field moves={instanceMoves} field={player.field} y={bot ? -450 : -800} />
+      <Hand moves={handMoves} hand={player.hand} _y={bot ? -40 : -1200} />
       <Security security={player.security} x={bot ? -20 : width - 100} y={bot ? -400 : -800} rot={bot ? 270 : 90} />
       <Deck bottom={bottom} x={bot ? -40 : width - 60} y={bot ? -230 : -1050} name={"eggs"} pile={player.eggs} card="eggback" />
     </div>
@@ -301,24 +448,26 @@ const EggZone = ({ eggzone, moves, x, y }) => {
 
   const doButton = (e) => {
     console.log(303, "BUTTON", e.target.value);
+    let send = document.getElementById("send");
     let value = e.target.value;
     setFormState({
       ...formState,
       selectedValue: value,
     });
-    setTimeout(() => document.getElementById("send").click(), 1);
+    console.log(177, "disabling send in egg");
+    setTimeout(() => { send.click(); send.disabled = true; console.log(177, "abc") }, 0);
   }
 
   return (
     <div>
       {moves.length > 0 && (
-      <div style={style} className="menu">
-        {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
-      </div> 
+        <div style={style} className="menu">
+          {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
+        </div>
       )}
       {eggzone && (
         <Instance key={uuidv4()} instance={eggzone} x={x} y={y} />)}
-  </div>
+    </div>
   )
 };
 
@@ -330,21 +479,27 @@ const Instance = ({ moves, instance, x, y }) => {
   let count = instance.stack.length;
   let delta = 25; //  - count * 3;
   if (count > 4) delta -= count; // scrunch cards a bit if stack is big
-  console.warn("OVERRIDE DELTA");
+  console.log("OVERRIDE DELTA");
   delta = 40;
   // console.log(`count is ${count} delta is ${delta}`);
   let top = y + delta * (count - 1);
 
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
+    let send = document.getElementById("send");
+    send.disabled = true;
     setShowMenu(false);
-    console.log(275, "BUTTON", e.target.value);
+
+
+    console.log(490, "BUTTON FOR INSTANCE", e.target.value);
     let value = e.target.value;
     setFormState({
       ...formState,
       selectedValue: value,
     });
-    setTimeout(() => document.getElementById("send").click(), 1);
+    setTimeout(() => {
+      send.disabled = false; send.click(); send.disabled = true;  
+    }, 1);
   }
 
   const handleInstanceCardClick = () => {
@@ -361,8 +516,10 @@ const Instance = ({ moves, instance, x, y }) => {
 
   let fn = moves ? handleInstanceCardClick : undefined;
 
+  // the instance isn't well-placed on the field, only its cards, 
+  // so a card-acttion for it doesn't make much sense
   return (
-    <div className={`wrapper ${moves ? 'card-action' : ''}`}  >
+    <div className={`wrapper ${false ? 'card-action' : ''}`}  >
 
       <div className="dp-overlay" dangerouslySetInnerHTML={{ __html: typeof instance.dp === "number" ? `${instance.dp} DP` : null }} style={{ left: `${x}px`, top: `${y - 30}px` }} />
       <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
@@ -383,6 +540,7 @@ const Instance = ({ moves, instance, x, y }) => {
 
 
 const Field = ({ moves, field, y, }) => {
+  console.log(425, moves);
   return (
 
     <div className="field">
@@ -445,6 +603,8 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
+    let send = document.getElementById("send");
+    send.disabled = true;
     setShowMenu(false);
     console.log(371, "BUTTON", e.target.value);
     let value = e.target.value;
@@ -452,7 +612,13 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
       ...formState,
       selectedValue: value,
     });
-    setTimeout(() => document.getElementById("send").click(), 1);
+    console.log(177, "disabling send");
+    //send.disabled = true;
+    setTimeout(() => { //send.disabled = true;
+      console.log("doing disable flip");
+      // this juggling was necessary to stop double-clicks
+      send.disabled = false; send.click(); send.disabled = true; 
+      console.log(177, 'disabld send'); }, 0);
   }
 
   const context = useCardClick();
@@ -471,8 +637,8 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const handleHandCardClick = () => {
     console.log(350, showMenu);
-     if (!showMenu)
-    setShowMenu(!showMenu);
+    if (!showMenu)
+      setShowMenu(!showMenu);
     //onCardAction(card);
   };
 
@@ -490,13 +656,12 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
     }
     return 'Back';
   }
-
   return (
     <div onClick={fn} style={{ position: "relative" }}
     >
-      <img src={imagesContext(card)} alt={card}
+      <img cancel=".no-drag" src={imagesContext(card)} alt={card}
+        id={card.split('@')[0]}
         style={x ? absPosition : relPosition}
-
         className={`card ${moves ? 'card-action' : ''}`}
       />
       {showMenu && (<div className="menu" style={menuPosition} >
@@ -508,10 +673,10 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
             )}
           <RecursiveMenu
             data={menuPath[currentLevel]}
-            doButton={doButton}
+          doButton={doButton}
             handleSubmenuOpen={handleSubmenuOpen}
           />
-          <button id="send" style={{ display: 'none' }}>Send</button>
+          <button id="sendDELETEME" style={{ display: 'none' }}>SendDELETEME</button>
         </div>
 
 
@@ -523,6 +688,60 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
 };
 
+const Chooser = ({ pile }) => {
+
+  if (!pile || !pile.count) return (<hr />);
+  if (!pile.cards) pile.cards = Array(pile.count).fill("back");
+
+  const texts = pile.texts;
+  console.log(550, texts);
+  return (
+    <div className="top-element" id="chooser">
+      <Draggable cancel=".no-drag">
+        <div className="chooser">
+          <table classNafme="revtable">
+            <tbody>
+              <tr>
+                <td colspan="100%" className="cardtext" align="center">
+                  {pile.title}
+                </td>
+              </tr>
+              <tr style={{ opacity: 1, zIndex: 90 }}  >
+                {pile.cards.map((card, index) => (
+                  <td key={uuidv4()} width="200px" >
+                    <div className="no-drag" style={{ zIndex: 60, opacity: "1", width: "50px", height: "200px" }}>
+                      <Card key={uuidv4()} card={card} moves={pile.moves[index]} />
+                    </div>
+                  </td>
+                ))}
+              </tr>
+              <tr style={{ opacity: 1, zIndex: 100 }}>
+                {texts && texts.map((text, index) => (
+                  <td key={uuidv4()} className="cardtext" width="200px" height="100px">
+                    <div style={{ paddingTop: "0px" }}>
+                      {text}
+                    </div>
+                  </td>
+                ))}
+              </tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+              <tr><td>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </Draggable>
+    </div >
+  );
+
+
+};
+
 
 
 
@@ -530,16 +749,30 @@ const Reveal = ({ pile }) => {
 
   if (!pile || !pile.count) return (<hr />);
   if (!pile.cards) pile.cards = Array(pile.count).fill("back");
+
+  const texts = pile.texts;
+  console.log(550, texts);
   return (
     <div className="top-element">
       <ClickableDraggable>
         <div className="reveal">
           <table className="revtable">
             <tbody>
-              <tr>
+              <tr style={{ opacity: 1, zIndex: 90 }}>
                 {pile.cards.map((card, index) => (
-                  <td key={uuidv4()} width="200px" height="100px" valign="center">
-                    <Card key={uuidv4()} card={card} />
+                  <td key={uuidv4()} width="200px" >
+                    <div style={{ zIndex: 60, opacity: "1", width: "50px", height: "200px" }}>
+                      <Card key={uuidv4()} card={card} />
+                    </div>
+                  </td>
+                ))}
+              </tr>
+              <tr style={{ opacity: 1, zIndex: 100 }}>
+                {texts && texts.map((text, index) => (
+                  <td key={uuidv4()} className="cardtext" width="200px" height="100px" valign="center">
+                    <div style={{ paddingTop: "-20px" }}>
+                      {text}
+                    </div>
                   </td>
                 ))}
               </tr>
@@ -606,7 +839,7 @@ if (process.env.REACT_APP_SOCKET_URL) socketurl = process.env.REACT_APP_SOCKET_U
 //if (process.env.SOCKET_URL) socketurl = process.env.SOCKET_URL;
 const socket4 = io(socketurl);
 
-function InputBox({ onSendMessage }) {
+const InputBox = ({ onSendMessage }) => {
 
   //  const [hasInitialized, setHasInitialized] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -616,23 +849,7 @@ function InputBox({ onSendMessage }) {
   //  const [response, setResponse] = useState(null);
 
   const params = new URLSearchParams(window.location.search);
-  let _pid = params.get("pid");
-  let _gid = params.get("gid");
-
-
   const { formState, setFormState } = useContext(FormContext);
-  /*
-  const [formState, setFormState] = useState(
-    {
-      gid: _gid,
-      pid: _pid,
-      message: 'json',
-      selectedValue: '',
-      selectOptions: [],
-      multiple: false,
-      last_id: -1
-    });
-*/
   const handleChange = (event) => {
 
     setFormState({
@@ -666,7 +883,14 @@ function InputBox({ onSendMessage }) {
     let choose = 1;
     for (let blob of ggg) {
       //      console.log("blob", blob);
-      let opt = { value: blob.command, label: blob.text, last_id: blob.last_id };
+      let opt = {
+        value: blob.command,
+        label: blob.text,
+        last_id: blob.last_id,
+        instance: blob.instance,
+        card: blob.card,
+        fulltext: blob.fulltext,
+      };
       if (blob.choose) {
         choose = blob.choose;
         formState.choose = choose;
@@ -715,10 +939,23 @@ function InputBox({ onSendMessage }) {
           ` Waiting on player ${status.control} <br>` +
           ` Security P1: ${obj.p1.security.count} &nbsp; P2: ${obj.p2.security.count} `
         x.value = status.last_id;
-        let s = document.getElementById("tick").style;
+        let t = document.getElementById("tick"); 
+        let s = t.style;
         if (status.step_text.startsWith("IN_LOOP")) {
+          console.log(917, status.step_text);
           s.backgroundColor = 'blue';
           s.color = 'red';
+          console.log(932, "tick?", messages.length, status.control, document.getElementById("send").disabled)
+          if (false && messages.length === 0 && document.getElementById("send").disabled === false) {
+            // start of main can't get in here because send not disabled
+            console.error("autoticking 1");
+            console.log("this is the one I need");
+            // t.click();
+          } else if (status.control == 0 && messages.length == 0 && document.getElementById("send").disabled == false) { // waiting on no one, try clicking?
+            console.error("autoticking 2");
+            setTimeout(() => t.click(), 1500);
+                   //  t.click();
+          }
         } else {
           s.backgroundColor = null;
           s.color = null;
@@ -863,7 +1100,14 @@ function InputBox({ onSendMessage }) {
     let x = socket4.emit('chat message', json); // Send message to backend    
   }
 
+  // when 'send' is directly clicked, it disables the 'send'
+  // button. when the value is set elsewhere and then indirectly
+  // clicked, the value updating causes a React refresh, and
+  // "send" hasn't been disabled yet
   const sendMessage = () => {
+    console.log(1099, "calling sm");
+    document.getElementById("send").disabled = true;
+
     var stat = document.getElementById("status");
 
     console.log(`stat.value is ${stat.value} formState.last_id is ${formState.last_id}`);
@@ -904,71 +1148,94 @@ function InputBox({ onSendMessage }) {
 
   };
 
+  const card_ids = [];
+  const texts = [];
+  let title = "";
+  const moves = [];
+  let send = document.getElementById("send");
+  console.log(1173, "disable is ", (send && send.disabled));
+  let can_show_cards = (send && send.disabled == false);
+  for (let opt of formState.selectOptions) {
+    if (opt.value === "json") { title = opt.label; continue; }
+    if (!opt.card) {
+      can_show_cards = false;
+      break;
+    }
+    card_ids.push(opt.card + "@grey");
+    texts.push(opt.fulltext);
+    const move = [{ command: opt.value, text: "Choose " + opt.card }];
+    moves.push(move); // command to run
+    console.log(924, can_show_cards, opt);
+  }
+  let pile = {};
+  if (can_show_cards) {
+    pile.cards = card_ids;
+    pile.texts = texts;
+    pile.moves = moves;
+    pile.count = texts.length;
+    pile.title = title;
+  }
+  console.log(936, pile);
+
+
   return (
     <div>
-      <ClickableDraggable>
-        <div className="inputbox" id="unique">
-          <div className="gamestate" id="status">
-            Press 'SEND' or 'TICK' to start.<br />
-            Press 'SEND' after selecting command.<br />
-          </div>
-          <hr />
-
-
-          <input
-            id='message'
-            type="hidden"
-            name="message"
-            value={formState.message}
-            onChange={handleChange}
-            size="8"
-          />
-          <input
-            type="hidden"
-            name="gid"
-            value={formState.gid}
-            onChange={handleChange}
-            size="8"
-          />
-          <input
-            type="hidden"
-            name="pid"
-            value={formState.pid}
-            onChange={handleChange}
-            size="4"
-          />
-          <input type="hidden"
-            name="count" value={formState.count}
-            onChange={handleChange} size="4" />
-          <input
-            type="hidden"
-            name="last_id"
-            value="-1"
-            onChange={handleSelectChange}
-            id="last_id"
-            size="4"
-          />
-          <select multiple={formState.multiple} className="moves" id="command"
-            value={formState.selectedValue} onChange={handleSelectChange} onTouchStart={handleSelectChange}>
-            {formState && formState.selectOptions &&
-              formState.selectOptions.map((option) => (
-                <option key={option.value} value={option.value} fred={option.last_id} thing1="two" >
-                  {option.label}
-                </option>
-              ))}
-          </select>
-
-          {/*        <button type="submit">Submit</button> */}
-
-          <button id="send" onClick={sendMessage} onTouchStart={sendMessage}>Send</button>
-          <button id="tick" onClick={sendTick} onTouchStart={sendTick}>Tick</button>
-
-
-          {/*        {response && <p>Response: {response}</p>}
-        <button>123 and {response}</button> */}
-
+      <div className="inputbox" id="unique">
+        <div className="gamestate" id="status">
+          Press 'SEND' or 'TICK' to start.<br />
+          Press 'SEND' after selecting command.<br />
         </div>
-      </ClickableDraggable>
+        <hr />
+
+
+        <input
+          id='message'
+          type="hidden"
+          name="message"
+          value={formState.message}
+          onChange={handleChange}
+          size="8"
+        />
+        <input
+          type="hidden"
+          name="gid"
+          value={formState.gid}
+          onChange={handleChange}
+          size="8"
+        />
+        <input
+          type="hidden"
+          name="pid"
+          value={formState.pid}
+          onChange={handleChange}
+          size="4"
+        />
+        <input type="hidden"
+          name="count" value={formState.count}
+          onChange={handleChange} size="4" />
+        <input
+          type="hidden"
+          name="last_id"
+          value="-1"
+          onChange={handleSelectChange}
+          id="last_id"
+          size="4"
+        />
+        <select multiple={formState.multiple} className="moves" id="command"
+          value={formState.selectedValue} onChange={handleSelectChange} onTouchStart={handleSelectChange}>
+          {formState && formState.selectOptions &&
+            formState.selectOptions.map((option) => (
+              <option key={option.value} value={option.value} fred={option.last_id} thing1="two" >
+                {option.label}
+              </option>
+            ))}
+        </select>
+        {can_show_cards && (<Chooser pile={pile} />)}
+        {/*        <button type="submit">Submit</button> */}
+
+        <button id="send" onClick={sendMessage} onTouchStart={sendMessage}>Send</button>
+        <button id="tick" onClick={sendTick} onTouchStart={sendTick}>Tick</button>
+      </div>
       <Draggable cancel=".no-drag">
         <div className={`popup ${messages.length > 0 ? 'show' : 'hide'}`} onClick={handleLogClick}>
           <button className="no-drag" onClick={handleLogClick}>[X]</button>

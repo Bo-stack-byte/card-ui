@@ -1,6 +1,19 @@
 /* App.css */
+
+body {
+  tra4nsform-ori4gin: 0 0;
+}
+
+.zoom {
+  transform: scale(1.0);
+
+}
+
 .game-field {
-  position: relative; /* changed Anchored to the left edge */
+  position: relative;
+  trandsform: scale(1.0);
+
+  /* changed Anchored to the left edge */
   left: 0;
   width: 800px;
   height: 1120px;
@@ -11,91 +24,149 @@
   z-index: 10;
 }
 
+
 .player-area {
   position: absolute;
 }
 
 .player-area.top {
-  top: 0; 
-  width: 100%; 
+  top: 0;
+  width: 100%;
 
 }
 
 .player-area.bottom {
-  top: 0; 
-  width: 100%; 
+  top: 0;
+  width: 100%;
 }
 
 .hand {
   position: absolute;
   bottom: -10%;
-  width: 500px; /* Fixed width to fit the cards in */
+  width: 500px;
+  /* Fixed width to fit the cards in */
   display: flex;
   justify-content: flex-start;
 }
 
 
 .wrapperUNUSED {
-  position: relative; /* Enable absolute positioning for child elements */
+  position: relative;
+  /* Enable absolute positioning for child elements */
 }
 
 
 .card2 {
   height: 150px;
   object-fit: cover;
-  margin-left: -40px; /* Negative margin for overlap */
+  margin-left: -40px;
+  /* Negative margin for overlap */
 }
 
 .card {
-  width: 100px; 
+  width: 100px;
   height: 150px;
   object-fit: cover;
-  position: absolute; /* Ensure absolute positioning */
+  position: absolute;
+  /* Ensure absolute positioning */
   background-color: lightblue;
   border: 0.5px solid #444;
   transition: all 0.3s ease;
 }
 
+@keyframes pulse {
+  0% {
+    outline-width: 3px;
+    outline: 3px solid rgba(255, 235, 100, 1);
+    /* Explicit aura with outline */
+  }
 
-.card-action {
-  outline: 3px solid rgba(255, 215, 0, 1); /* Explicit aura with outline */
-  cursor: pointer; /* Change pointer */
+  25% {
+    outline: 6px solid rgba(255, 215, 0, 1);
+    /* Explicit aura with outline */
+  }
+
+  50% {
+    outline-width: 3px;
+    outline: 3px solid rgba(255, 235, 100, 1);
+    /* Explicit aura with outline */
+  }
+
+  75% {
+    outline: 8px solid rgba(255, 215, 0, 1);
+    /* Explicit aura with outline */
+  }
+ 
+  100% {
+    outline-width: 3px;
+    outline: 3px solid rgba(255, 235, 100, 1);
+    /* Explicit aura with outline */
+  }
 }
 
+.card-action {
+  outline: 3px solid rgba(255, 215, 0, 1);
+  /* Explicit aura with outline */
+  cursor: pointer;
+  /* Change pointer */
+  animation: pulse 4s infinite;
+  /* Add pulsing animation */
+  outline-offset: -1px;
+  /* Move the outline inward */
+  border-radius: 1px;
+  /* Add rounded corners */
+}
+
+/* Increase border size on smaller screens */
+@media (max-width: 768px) {
+  .card-action {
+    outline: 5px solid rgba(255, 215, 0, 1);
+    /* Adjust size for mobile */
+    outline-offset: -1px;
+    /* Move the outline inward */
+  }
+}
+
+
 .card-acti32323on {
-  box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); /* Glow effect */
-  cursor: pointer; /* Change pointer */
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+  /* Glow effect */
+  cursor: pointer;
+  /* Change pointer */
 }
 
 .menuJUST_THE_SAME {
   position: absolute;
-  bottom: 80%; /* Position the bottom of the menu 20% down the card */
+  bottom: 80%;
+  /* Position the bottom of the menu 20% down the card */
   left: 50%;
-  transform: translateX(-90%); /* Center the menu horizontally */
+  transform: translateX(-90%);
+  /* Center the menu horizontally */
   background: white;
   border: 1px solid #ccc;
   padding: 10px;
   z-index: 1000;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Optional: Add a shadow for better visibility */
 }
 
 
 
 .menu {
   position: absolute;
-/*  top: -120%;
+  /*  top: -120%;
   left: 50%;
   transform: translateY(-70%) translateX(-20%); */
-  width: 100px; 
+  width: 100px;
   border: 1px solid #ccc;
   padding: 10px;
-  z-index: 1000; 
+  z-index: 1000;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 
 .menuOLD {
-/*  display: none;*/
+  /*  display: none;*/
   position: absolute;
   background: white;
   border: 1px solid #ccc;
@@ -109,69 +180,80 @@
 
 
 .dp-overlay {
-  position: absolute; /* Position the text on top */
-  top: 0; /* Align to top */
-  left: 0; /* Align to left */
-  color: white; /* Adjust color and other styles as needed */
+  position: absolute;
+  /* Position the text on top */
+  top: 0;
+  /* Align to top */
+  left: 0;
+  /* Align to left */
+  color: white;
+  /* Adjust color and other styles as needed */
   font-family: 'VT323', 'Consolas', monospace;
   font-size: 24px;
   text-align: center;
   z-index: 900;
   width: 100px;
-  background-color: rgba(0, 0, 0, 0.8); 
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .detail-overlay {
-  position: absolute; 
-  bottom: 0; 
-  left: 0; 
-  color: white; 
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  color: white;
   font-size: 8px;
   z-index: 900;
   width: 100px;
-  background-color: rgba(0, 0, 0, 0.5); 
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .text-overlay {
-  position: absolute; 
-  top: 0; 
-  left: 0; 
-  color: white; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
   font-size: 8px;
   z-index: 900;
   width: 100px;
-  background-color: rgba(0, 0, 0, 0.5); 
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 /* display messages */
 .popup {
   /* Default styles for the popup */
-  opacity: 1; /* Ensure full opacity initially */
-  transition: opacity 0.2s ease-in-out; /* Transition for opacity change */
+  opacity: 1;
+  /* Ensure full opacity initially */
+  transition: opacity 0.2s ease-in-out;
+  /* Transition for opacity change */
   background-color: white;
-/*  border: 2px solid black;*/
-  padding: 50px;
+  border: 5px solid black;
+  */ padding: 40px;
   color: brown;
+  font-family: "Helvetica";
   font-size: 30px;
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 20%;
+  left: 20%;
   transform: translate(-50%, -50%);
-  z-Index:123;
+  z-Index: 123;
 }
 
 .popup.hide {
-  opacity: 0; /* Target opacity for the hidden state */
+  display: none;
+  opacity: 0;
 }
 
 /* modals should be on top-top, +2000
    input box should be top of what's left, say 1200
    */
+
 .inputbox {
   position: absolute;
   z-index: 1200;
-  top: 370px;
+  top: 70px;
+  /* Use viewport height for better positioning */
 }
+
 
 .gamestate {
   z-index: 950;
@@ -206,7 +288,8 @@
   position: absolute;
   width: 40px;
   height: 40px;
-  border: 10px solid red; /* This makes the circle's border red */
+  border: 10px solid red;
+  /* This makes the circle's border red */
   border-radius: 50%;
   background-color: transparent;
   transition: left 0.5s ease-in-out;
@@ -221,17 +304,17 @@
 
 .dp {
   color: blue;
-/* how to style DP? */
+  /* how to style DP? */
 }
 
 
-.temp { 
+.temp {
   background: rgba(158, 242, 162, 0.5);
   color: black;
   font-weight: bold;
 }
 
-.status { 
+.status {
   background-color: rgb(226, 239, 140, 0.5);
   color: black;
   font-weight: bold;
@@ -246,10 +329,27 @@
   justify-content: center;
   align-items: center;
 
-  flex-direction: column; 
-  align-items: center; 
+  flex-direction: column;
+  align-items: center;
 
 }
+
+/* Styling for the parent div */
+.chooser {
+  position: absolute;
+  top: 150px;
+  left: 200px;
+  width: 1000px;
+  height: 500px;
+  background-color: rgba(0, 0, 0, 0.7);
+  opacity: 95%;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  alfign-items: center;
+  vertical-align: text-top;
+}
+
 
 /* Styling for the parent div */
 .reveal {
@@ -264,10 +364,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  vertical-align: middle;
+  verftical-align: top;
 }
 
 .revtable {
+  /*  vertical-align: top;*/
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -276,8 +377,10 @@
 
 /* Styling for the images */
 .revtable img {
-  transform: scale(2); /* Scale images to 200% */
-  margin: 0 5px; /* Adjust margin as needed to control spacing between images */
+  transform: scale(2);
+  /* Scale images to 200% */
+  margin: 0 5px;
+  /* Adjust margin as needed to control spacing between images */
   opacity: 95%;
 }
 
@@ -289,45 +392,57 @@
   top: 200px;
   left: 200px;
 
-  width:1000px;
-  height:500px;
-  
+  width: 1000px;
+  height: 500px;
 
-  
+
+
   opacity: 80%;
   /* Adjust these values as needed to position the Reveal component correctly */
-  z-index: 9999; /* Ensure it appears on top */
-  background-color: rgba(255, 255, 255, 0.8); /* Optional: semi-transparent background */
+  z-index: 9999;
+  /* Ensure it appears on top */
+  background-color: rgba(255, 255, 255, 0.8);
+  /* Optional: semi-transparent background */
 
 }
 
 .revtable_X {
-   width: 100%;                                                                                                          
-  max-height: 100%;                                                                                                                 
-  overflow-y: auto;                                                                                                                 
-  }
-  
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
 
-.reveal_X > * {
-  transform: scale(1.0); 
+
+.reveal_X>* {
+  transform: scale(1.0);
 }
 
 
 .top-element {
-  position: fixed; /* or absolute depending on your needs */
-  top: 0; /* Adjust position as necessary */
-  left: 0; /* Adjust position as necessary */
-  z-index: 9999; /* Very high value to ensure it stays on top */
+  position: fixed;
+  /* or absolute depending on your needs */
+  top: 0;
+  /* Adjust position as necessary */
+  left: 0;
+  /* Adjust position as necessary */
+  z-index: 9999;
+  /* Very high value to ensure it stays on top */
 }
 
 .modal-image {
   width: 100%;
-  height: auto; /* Maintain aspect ratio */
-  max-height: 100vh; /* Restrict the height to the viewport height */
-  object-fit: contain; /* Ensure the entire image is visible */
-  touch-action: manipulation; /* Allow pinch-to-zoom */
-  display: block; /* Ensure the image behaves like a block element */
-  margin: auto; /* Center the image */
+  height: auto;
+  /* Maintain aspect ratio */
+  max-height: 100vh;
+  /* Restrict the height to the viewport height */
+  object-fit: contain;
+  /* Ensure the entire image is visible */
+  touch-action: manipulation;
+  /* Allow pinch-to-zoom */
+  display: block;
+  /* Ensure the image behaves like a block element */
+  margin: auto;
+  /* Center the image */
 }
 
 
@@ -336,9 +451,10 @@
 
 @media (max-width: 768px) {
   .modal-content {
-      transform: scale(3.5); 
+    transform: scale(3.5);
   }
 }
+
 /*
 @media (max-width: 480px) {
   .modal-image {
@@ -346,3 +462,18 @@
   }
 }
 */
+
+
+@font-face {
+  font-family: 'MyriadProBold';
+  src: local('MyriadProBold'), url(./fonts/Myriad-Pro-Bold-SemiCondensed.otf) format('opentype');
+}
+
+.cardtext {
+  font-family: "MyriadProBold", Roboto, Helvetica;
+  color: white;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+  z-index: 70;
+  vertical-align: top;
+
+}
