@@ -18,6 +18,7 @@ import RecursiveMenu from './RecursiveMenu';
 import Modal from 'react-modal';
 
 
+// Visualizer v0.7.0 better background and image, link effects
 // Visualizer v0.6.5 more cards and option pop-ups
 // Visualizer v0.6.4 effect chooser pop-up
 // Visualizer v0.6.3 pop-over on test cases
@@ -188,6 +189,8 @@ function TableTop({ response }) {
         let evo_card = opts.evo_card;
         let cost = opts.cost;
         let words = cmd.split(" ");
+        let link_source = opts.link_source;
+        let link_target = opts.link_target;
         switch (cmd.substring(0, 3)) {
           case "ExxxVO": // EVO hand instance cost instance2
             //let [, handindex, instance, cost, instance2] = words;
@@ -200,8 +203,8 @@ function TableTop({ response }) {
             if (!cards[handindex]) cards[handindex] = [];
             c = cards[handindex];
 
-            let e = c.find(x => x.text === 'Evolve on');
-            if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
+            let e = c.find(x => x.text === 'Evolve1 on');
+            if (!e) { e = { text: "Evolve1 on", submenu: [] }; c.push(e); }
             e.submenu.push({ text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
 
             if (false) { // let things we can evo into have a link
@@ -249,10 +252,32 @@ function TableTop({ response }) {
               if (!cards[handindex]) cards[handindex] = [];
               c = cards[handindex];
 
-              let e = c.find(x => x.text === 'Evolve on');
-              if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
-              e.submenu.push({ text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+              let e = c.find(x => x.text === 'Evolve2 on');
+              if (!e) { e = { text: "Evolve2 on", submenu: [] }; c.push(e); }
+              e.submenu.push({ parenttext: "Evolve2 on", text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+              console.error(258, e);
               break;
+            }
+            if (link_source) {
+              if (link_source.location === "HAND") {
+                console.error(261, opts);
+
+                handindex = link_source.id;
+                instance = link_target.id;
+                link_target = link_target.name;
+
+                if (!cards[handindex]) cards[handindex] = [];
+                c = cards[handindex];
+  
+                let e = c.find(x => x.text === 'Link to');
+                if (!e) { e = { text: "Link to", submenu: [] }; c.push(e); }
+                e.submenu.push({ parenttext: "Link to", text: `${link_target} ${instance} (${cost})`, command: cmd });
+                console.error(274, c);
+
+                break;
+  
+              }
+
             }
             // do we have target ids?
             if (!target_id) break;
@@ -498,7 +523,7 @@ const Instance = ({ moves, instance, x, y }) => {
       selectedValue: value,
     });
     setTimeout(() => {
-      send.disabled = false; send.click(); send.disabled = true;  
+      send.disabled = false; send.click(); send.disabled = true;
     }, 1);
   }
 
@@ -589,6 +614,7 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
   const [menuPath, setMenuPath] = useState([moves]); // State to track the path to the current menu
 
   const handleSubmenuOpen = (submenu) => {
+    console.log(616, menuPath, submenu);
     setMenuPath([...menuPath, submenu]);
     setCurrentLevel(currentLevel + 1);
   };
@@ -617,8 +643,9 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
     setTimeout(() => { //send.disabled = true;
       console.log("doing disable flip");
       // this juggling was necessary to stop double-clicks
-      send.disabled = false; send.click(); send.disabled = true; 
-      console.log(177, 'disabld send'); }, 0);
+      send.disabled = false; send.click(); send.disabled = true;
+      console.log(177, 'disabld send');
+    }, 0);
   }
 
   const context = useCardClick();
@@ -652,10 +679,13 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const getParentText = () => {
     if (currentLevel > 0 && menuPath[currentLevel - 1].length > 0) {
-      return menuPath[currentLevel - 1][0].text; // Get the text field of the parent level
+      console.log(681, currentLevel, menuPath);
+      return menuPath[currentLevel][0].parenttext + ":";
+//      return menuPath[currentLevel - 1][0].text; // Get the text field of the parent level
     }
     return 'Back';
   }
+  console.log(616, "x", menuPath);
   return (
     <div onClick={fn} style={{ position: "relative" }}
     >
@@ -673,7 +703,7 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
             )}
           <RecursiveMenu
             data={menuPath[currentLevel]}
-          doButton={doButton}
+            doButton={doButton}
             handleSubmenuOpen={handleSubmenuOpen}
           />
           <button id="sendDELETEME" style={{ display: 'none' }}>SendDELETEME</button>
@@ -939,7 +969,7 @@ const InputBox = ({ onSendMessage }) => {
           ` Waiting on player ${status.control} <br>` +
           ` Security P1: ${obj.p1.security.count} &nbsp; P2: ${obj.p2.security.count} `
         x.value = status.last_id;
-        let t = document.getElementById("tick"); 
+        let t = document.getElementById("tick");
         let s = t.style;
         if (status.step_text.startsWith("IN_LOOP")) {
           console.log(917, status.step_text);
@@ -954,7 +984,7 @@ const InputBox = ({ onSendMessage }) => {
           } else if (status.control == 0 && messages.length == 0 && document.getElementById("send").disabled == false) { // waiting on no one, try clicking?
             console.error("autoticking 2");
             setTimeout(() => t.click(), 1500);
-                   //  t.click();
+            //  t.click();
           }
         } else {
           s.backgroundColor = null;

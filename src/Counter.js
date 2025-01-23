@@ -1,9 +1,15 @@
 import React from 'react';
 // import './App.css';
 
+
+const green = 34.3;
+const greencenter = 373;
+const trans = 47
+const transcenter = 500
 const Counter = ({ position }) => {
+
     console.log(position);
-    let y = 373 + position * -34.3;
+    let y = transcenter + position * -trans;
     if (position > 0) (y += position * .7);
     console.log(`${y}px`);
 
