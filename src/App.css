@@ -17,12 +17,12 @@ body {
   width: 800px;
   height: 1120px;
 
-  background-image: url('./background.png');
-  background-size: contain;
+/*  background-image: url('./background.png');
+  background-size: contain;*/
 
-  /* background-image: url('./display-mat.png'); 
+  background-image: url('./display-mat.png'); 
   background-size: 130%;
-  background-color: lightgreen;*/
+  background-color: lightgreen;
 
   background-position: left top;
   background-repeat: no-repeat;
@@ -295,13 +295,14 @@ body {
   height: 40px;
   /* This makes the circle's border red */
 
-  border: 10px solid red;
-  border-radius: 48%;
 
-  /*
+/*  border: 10px solid red;
+  border-radius: 48%;*/
+
+
   border: 12px solid black;
   border-radius: 20%;
-*/
+
   background-color: transparent;
   transition: left 0.5s ease-in-out;
 }

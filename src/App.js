@@ -17,7 +17,8 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import Modal from 'react-modal';
 
-// Visualizer v0.7.0.1 better background and image, link effects, discord links
+
+// Visualizer v0.7.0.x better background and image, link effects, bugs
 // Visualizer v0.6.5 more cards and option pop-ups
 // Visualizer v0.6.4 effect chooser pop-up
 // Visualizer v0.6.3 pop-over on test cases
@@ -497,6 +498,11 @@ const EggZone = ({ eggzone, moves, x, y }) => {
 const Instance = ({ moves, instance, x, y }) => {
   ///  console.log(`inside instance ${x} ${y}`);
 
+
+  const closeMenu = () => {
+    setShowMenu(false);
+  }
+
   const [showMenu, setShowMenu] = useState(false);
 
   let count = instance.stack.length;
@@ -553,8 +559,13 @@ const Instance = ({ moves, instance, x, y }) => {
         ))}
       </div>
       {showMenu && (<div className="menu" style={menuStyle}  >
-        {moves.map(item => (<button onClick={doButton} value={item.command}>{item.text}</button>))}
-        {/*        <button onClick={undefined}>See Instance</button> */}
+        <div >
+          <RecursiveMenu
+            moves={moves}
+            doButton={doButton}
+            closeMenu={closeMenu}
+          />
+        </div>
       </div>)}
 
     </div>
@@ -610,8 +621,8 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const closeMenu = () => {
     setShowMenu(false);
-}
-const [showMenu, setShowMenu] = useState(false);
+  }
+  const [showMenu, setShowMenu] = useState(false);
 
 
   //  const [isEnlarged, setIsEnlarged] = useState(false);
@@ -673,7 +684,7 @@ const [showMenu, setShowMenu] = useState(false);
       {showMenu && (<div className="menu" style={menuPosition} >
         <div >
           <RecursiveMenu
-          moves={moves}
+            moves={moves}
             doButton={doButton}
             closeMenu={closeMenu}
           />
