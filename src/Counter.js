@@ -10,6 +10,7 @@ const Counter = ({ position }) => {
 
     console.log(position);
     let y = transcenter + position * -trans;
+    y = greencenter + position * -green;
     if (position > 0) (y += position * .7);
     console.log(`${y}px`);
 

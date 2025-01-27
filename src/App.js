@@ -17,8 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import Modal from 'react-modal';
 
-
-// Visualizer v0.7.0 better background and image, link effects
+// Visualizer v0.7.0.1 better background and image, link effects, discord links
 // Visualizer v0.6.5 more cards and option pop-ups
 // Visualizer v0.6.4 effect chooser pop-up
 // Visualizer v0.6.3 pop-over on test cases
@@ -260,23 +259,22 @@ function TableTop({ response }) {
             }
             if (link_source) {
               if (link_source.location === "HAND") {
-                console.error(261, opts);
-
                 handindex = link_source.id;
-                instance = link_target.id;
-                link_target = link_target.name;
-
                 if (!cards[handindex]) cards[handindex] = [];
                 c = cards[handindex];
-  
-                let e = c.find(x => x.text === 'Link to');
-                if (!e) { e = { text: "Link to", submenu: [] }; c.push(e); }
-                e.submenu.push({ parenttext: "Link to", text: `${link_target} ${instance} (${cost})`, command: cmd });
-                console.error(274, c);
-
-                break;
-  
+              } else if (link_source.location === "FIELD") {
+                instance = link_source.id;
+                if (!instances[instance]) instances[instance] = [];
+                c = instances[instance];
               }
+              instance = link_target.id;
+              link_target = link_target.name;
+
+              let e = c.find(x => x.text === 'Link to');
+              if (!e) { e = { text: "Link to", submenu: [] }; c.push(e); }
+              e.submenu.push({ parenttext: "Link to", text: `${link_target} ${instance} (${cost})`, command: cmd });
+              console.error(274, c);
+              break;
 
             }
             // do we have target ids?
@@ -610,21 +608,12 @@ const Hand = ({ moves, hand, _y }) => {
 
 const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
-  const [currentLevel, setCurrentLevel] = useState(0); // State to track the current menu level
-  const [menuPath, setMenuPath] = useState([moves]); // State to track the path to the current menu
-
-  const handleSubmenuOpen = (submenu) => {
-    console.log(616, menuPath, submenu);
-    setMenuPath([...menuPath, submenu]);
-    setCurrentLevel(currentLevel + 1);
-  };
-  const handleBack = () => {
-    setMenuPath(menuPath.slice(0, -1));
-    setCurrentLevel(currentLevel - 1);
-  };
+  const closeMenu = () => {
+    setShowMenu(false);
+}
+const [showMenu, setShowMenu] = useState(false);
 
 
-  const [showMenu, setShowMenu] = useState(false);
   //  const [isEnlarged, setIsEnlarged] = useState(false);
 
   const { formState, setFormState } = useContext(FormContext);
@@ -658,10 +647,6 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
     position: 'absolute', left: `${x}px`, bottom: `${y}px`, zIndex: z + 1,
   };
 
-  const closeMenu = () => {
-    setShowMenu(false);
-  }
-
   const handleHandCardClick = () => {
     console.log(350, showMenu);
     if (!showMenu)
@@ -677,15 +662,6 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
   if (showMenu) console.log(359, moves);
 
 
-  const getParentText = () => {
-    if (currentLevel > 0 && menuPath[currentLevel - 1].length > 0) {
-      console.log(681, currentLevel, menuPath);
-      return menuPath[currentLevel][0].parenttext + ":";
-//      return menuPath[currentLevel - 1][0].text; // Get the text field of the parent level
-    }
-    return 'Back';
-  }
-  console.log(616, "x", menuPath);
   return (
     <div onClick={fn} style={{ position: "relative" }}
     >
@@ -696,15 +672,10 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
       />
       {showMenu && (<div className="menu" style={menuPosition} >
         <div >
-          {(currentLevel > 0 && (
-            <button onClick={handleBack}>{getParentText()}</button>
-          )) || (
-              <button onClick={closeMenu}>×</button>
-            )}
           <RecursiveMenu
-            data={menuPath[currentLevel]}
+          moves={moves}
             doButton={doButton}
-            handleSubmenuOpen={handleSubmenuOpen}
+            closeMenu={closeMenu}
           />
           <button id="sendDELETEME" style={{ display: 'none' }}>SendDELETEME</button>
         </div>
