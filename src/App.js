@@ -15,9 +15,12 @@ import ClickableDraggable from './ClickableDraggable';
 import LogDisplay from './LogDisplay';
 import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
-import Modal from 'react-modal';
+import { motion } from 'framer-motion';
 
-
+// Visualizer v0.7.4 highlighted text
+// Visualizer v0.7.3 goofy trash view
+// Visualizer v0.7.2 animation
+// Visualizer v0.7.1   plugged cards 
 // Visualizer v0.7.0.x better background and image, link effects, bugs
 // Visualizer v0.6.5 more cards and option pop-ups
 // Visualizer v0.6.4 effect chooser pop-up
@@ -59,19 +62,59 @@ export const FormProvider = ({ children }) => {
   );
 };
 
+const globalCardPositions = {};
+
+export const getCardPosition = (id) => globalCardPositions[id] || { left: 0, top: 0 };
+
+export const updateCardPosition = (id, newPosition) => {
+  globalCardPositions[id] = newPosition;
+};
+
+/*
+const CardContext = createContext();
+
+export const CardProvider = ({ children }) => {
+  const [cardPositions, setCardPositions] = useState({});
+
+  const updateCardPosition = (id, newPosition) => {
+    setCardPositions((prevPositions) => ({
+      ...prevPositions,
+      [id]: newPosition,
+    }));
+  };
+
+  return (
+    <CardContext.Provider value={{ cardPositions, updateCardPosition }}>
+      {children}
+    </CardContext.Provider>
+  );
+};
+
+export const useCardContext = () => useContext(CardContext);
+*/
 
 const CardClickContext = createContext();
 export const useCardClick = () => useContext(CardClickContext);
 export const CardClickProvider = ({ children }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPileOpen, setIsPileOpen] = useState(false);
+  const [pile, setPile] = useState([]);
   const [selectedImage, setSelectedImage] = useState('');
   const handleCardClick = (imageUrl) => {
     setSelectedImage(imageUrl);
     setIsModalOpen(true);
   };
+  const handlePileClick = (pile) => {
+    setPile(pile);
+    setIsPileOpen(true);
+  }
   const closeModal = () => { setIsModalOpen(false); };
+  const closePile = () => { setIsPileOpen(false); };
   return (
-    <CardClickContext.Provider value={{ handleCardClick, selectedImage, isModalOpen, closeModal }}>
+    <CardClickContext.Provider value={{
+      handleCardClick, selectedImage, isModalOpen, closeModal,
+      handlePileClick, pile, isPileOpen, closePile,
+    }}>
       {children}
     </CardClickContext.Provider>
   );
@@ -138,11 +181,21 @@ const App = () => {
           </div>
           <TableTop response={message} onSendMessage={handleSendMessage} />
           <CardModalController />
+          <PileModalController />
         </CardClickProvider>
       </FormProvider>
 
     </div>
   );
+};
+
+const PileModalController = () => {
+  const { pile, isPileOpen, closePile } = useCardClick();
+  //  console.log('ModalController re-render', { selectedImage, isModalOpen });
+  if (!isPileOpen) return;
+  return (<div onClick={closePile} onTouchStart={closePile}>
+    <Chooser pile={pile} />
+  </div>);
 };
 
 const CardModalController = () => {
@@ -317,9 +370,68 @@ function TableTop({ response }) {
   }
 }
 
+let width = 1200; // 800;
+
+// 0 is bottom, 1 is top
+let coordinates = {
+  0: {
+
+    TrashOld: { x: 25, y: -1050 },
+    TrashMed: { x: 40, y: -800 },
+    Trash: { x: 904, y: -250 }, // ?
+
+    DeckOld: { x: 670, y: -400 },
+    DeckMed: { x: 912, y: -522 },
+    Deck: { x: 904, y: -424 },
+
+    HandOld: { y: -40 },
+    Hand: { y: 100 },
+
+    SecurityOld: { x: -20, y: -400 },
+    SecurityMed: { x: -10, y: -250 },
+    Security: { x: -10, y: -150 },
+
+    FieldOld: { y: -450 },
+    Field: { y: -450 },
+
+    EggOld: { x: 75, y: -230 },
+    Egg: { x: 175, y: -100 },
+
+    EggDeckOld: { x: -40, y: -230 },
+    EggDeck: { x: 75, y: -80 },
+
+  },
+  1: {
+    TrashOld: { x: 25, y: -1050 },
+    TrashMed: { x: 40, y: -800 },
+    Trash: { x: 40, y: -880 }, // ?
+
+    DeckOld: { x: 25, y: -875 },
+    DeckMed: { x: 50, y: -750 },
+    Deck: { x: 40, y: -700 },
+
+    HandOld: { y: -1200 },
+    Hand: { y: -1200 },
+
+    SecurityOld: { x: width - 100, y: -800 },
+    Security: { x: width - 200, y: -800 },
+
+    FieldOld: { y: -800 },
+    Field: { y: -750 },
+
+    EggOld: { x: width - 180, y: -1070 },
+    EggMed: { x: width - 450, y: -1080 },
+    Egg: { x: width - 450, y: -1040 },
+
+    EggDeckOld: { x: width - 60, y: -1050 },
+    EggDeck: { x: width - 330, y: -1040 },
+
+  }
+}
+
+
 const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMoves }) => {
   //       <Pile x={800} y={-200} pilelength={player.trash} />
-  let width = 800;
   let height = 2000;
   let bot = (bottom === 1);
 
@@ -405,7 +517,9 @@ const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMo
   // evo lines end
   if (!player) return;
 
-  // cards[0] = 
+
+  let c = coordinates[bot ? 0 : 1];
+
   return (
     <div className={`player-area ${className}`} ref={containerRef}
       style={{
@@ -424,13 +538,18 @@ const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMo
         <Reveal pile={player.search} />
       </div>
 
-      <EggZone moves={eggMoves} eggzone={player.eggzone} x={bot ? 75 : width - 180} y={bot ? -230 : -1070} />
-      <Deck bottom={bottom} x={bot ? 670 : 25} y={bot ? -400 : -875} name={"deck"} pile={player.deck} card="back" />
-      <Trash trash={player.trash} x={bot ? 670 : 25} y={bot ? -225 : -1050} />
-      <Field moves={instanceMoves} field={player.field} y={bot ? -450 : -800} />
-      <Hand moves={handMoves} hand={player.hand} _y={bot ? -40 : -1200} />
-      <Security security={player.security} x={bot ? -20 : width - 100} y={bot ? -400 : -800} rot={bot ? 270 : 90} />
-      <Deck bottom={bottom} x={bot ? -40 : width - 60} y={bot ? -230 : -1050} name={"eggs"} pile={player.eggs} card="eggback" />
+      <EggZone moves={eggMoves} eggzone={player.eggzone} x={c.Egg.x} y={c.Egg.y} />
+      <Deck bottom={bottom} x={c.Deck.x} y={c.Deck.y} name={"deck"} pile={player.deck} card="back" />
+      <Trash trash={player.trash} x={c.Trash.x} y={c.Trash.y} />
+      <Field moves={instanceMoves} field={player.field} y={c.Field.y} />
+      <Hand moves={handMoves} hand={player.hand} _y={c.Hand.y} />
+      <Security security={player.security} x={c.Security.x} y={c.Security.y} rot={bot ? 270 : 90} />
+      <Deck bottom={bottom} x={c.EggDeck.x} y={c.EggDeck.y} name={"eggs"} pile={player.eggs} card="eggback" />
+
+      <div className="top-element">
+        <Chooser pile={player.nullzone} rot={45} />
+      </div>
+
     </div>
   );
 }
@@ -439,18 +558,19 @@ const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMo
 // stacked pile
 // face down
 const Deck = ({ pile, x, y, card, name, bottom }) => {
-  //console.log("rendering " + bottom + " pile " + card + " " + x + " " + y + " length "); // + pile.length);
+  console.log("rendering  deck " + bottom + " pile " + card + " x " + x + " y " + y + " length "); // + pile.length);
 
-  //return (<span>0</span>);
+  let visibility = "show";
   if (!pile || pile.count === 0) {
-    return (<span>0</span>);
+    visibility = "hidden";
   }
   //         <Card key={index} card={card} x={45} y={-180 - index*30} z={index} style={{ top: '80%', left: `${10 + index * 15}%` }} />
   let index = 0;
+
   return (
-    <span>
+    <span id={"deck" + bottom}>
       <div>
-        <div className="text-overlay" value={"SIZE: " + pile.count} dangerouslySetInnerHTML={{ __html: "CARDS:&nbsp;" + pile.count }}
+        <div className="text-overlay" value={"SIZE: " + pile.count} dangerouslySetInnerHTML={{ __html: "DECK SIZE:&nbsp;" + pile.count }}
           style={{
             display: 'flex',
             position: 'absolute',
@@ -459,9 +579,14 @@ const Deck = ({ pile, x, y, card, name, bottom }) => {
             width: `80px`
           }}
         />
-        <Card key={uuidv4()} card={card} x={x} y={y} z={20} overlay={pile.count + " cards"} style={{ top: '80%', left: `${10 + index * 15}%`, width: `50px` }} />
+        <div style={{ visibility: visibility }} >
+          <Card id={uuidv4()} key={bottom ? 20 : 30} card={card}
+            position={{ left: x, top: y }} z={20}
+            overlay={pile.count + " cards"}
+            OBSOLETEstyle={{ top: '80%', left: `${10 + index * 15}%`, width: `50px`, visibility: visibility }} />
+        </div>
       </div>
-    </span>
+    </span >
   );
 }
 const EggZone = ({ eggzone, moves, x, y }) => {
@@ -496,13 +621,11 @@ const EggZone = ({ eggzone, moves, x, y }) => {
 };
 
 const Instance = ({ moves, instance, x, y }) => {
-  ///  console.log(`inside instance ${x} ${y}`);
 
-
+  // is the menu here used at all?
   const closeMenu = () => {
     setShowMenu(false);
   }
-
   const [showMenu, setShowMenu] = useState(false);
 
   let count = instance.stack.length;
@@ -510,6 +633,7 @@ const Instance = ({ moves, instance, x, y }) => {
   if (count > 4) delta -= count; // scrunch cards a bit if stack is big
   console.log("OVERRIDE DELTA");
   delta = 40;
+  let plug_delta = 30;
   // console.log(`count is ${count} delta is ${delta}`);
   let top = y + delta * (count - 1);
 
@@ -544,21 +668,28 @@ const Instance = ({ moves, instance, x, y }) => {
   }
 
   let fn = moves ? handleInstanceCardClick : undefined;
-
+  let plugs = instance.plugs || [];
+  let rot = plugs.length ? 70 : 90; // if plugs, don't fully rotate
   // the instance isn't well-placed on the field, only its cards, 
   // so a card-acttion for it doesn't make much sense
+
   return (
     <div className={`wrapper ${false ? 'card-action' : ''}`}  >
 
       <div className="dp-overlay" dangerouslySetInnerHTML={{ __html: typeof instance.dp === "number" ? `${instance.dp} DP` : null }} style={{ left: `${x}px`, top: `${y - 30}px` }} />
       <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.summary }} style={{ left: `${x}px`, bottom: `${-y + 30}px` }} />
       <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.id }} style={{ width: '20px', textAlign: `right`, left: `${x + 80}px`, bottom: `${-y - 30}px` }} />
-      <div onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
-        {instance.stack.map((card, index) => (
-          <Card key={uuidv4()} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} x={x} y={top - index * delta} z={30 + index} rotate={(index === count - 1 && instance.suspended) ? 90 : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+      <div style={{ zIndex: 2 }}>
+        {plugs.map((card, index) => (
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: x + 20 + plug_delta * index, top: y }} z={10 - index} rotate={-90} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
-      {showMenu && (<div className="menu" style={menuStyle}  >
+      <div style={{ zIndex: 10 }} onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
+        {instance.stack.map((card, index) => (
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} position={{ left: x, top: top - index * delta }} z={30 + index} rotate={(index === count - 1 && instance.suspended) ? rot : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+        ))}
+      </div>
+      {false && showMenu && (<div className="menu" style={menuStyle}  >
         <div >
           <RecursiveMenu
             moves={moves}
@@ -575,12 +706,17 @@ const Instance = ({ moves, instance, x, y }) => {
 
 const Field = ({ moves, field, y, }) => {
   console.log(425, moves);
+  let xpos = [];
+  let buffer = 0;
+  for (let i = 0; i < field.length; i++) {
+    xpos[i] = 200 + i * 130 + buffer;
+    buffer += field[i].plugs.length * 30; // slide over for plugs
+  }
   return (
-
     <div className="field">
       {field.map((instance, index) => (
         <div className="field-instance" key={uuidv4()}>
-          <Instance key={uuidv4()} moves={moves[instance.id]} instance={instance} x={200 + index * 130} y={y} />
+          <Instance key={uuidv4()} moves={moves[instance.id]} instance={instance} x={xpos[index]} y={y} />
         </div>
       ))}
     </div>
@@ -595,13 +731,14 @@ const Hand = ({ moves, hand, _y }) => {
 
   if (!hand.cards) hand.cards = Array(hand.count).fill("back");
 
+  console.log(633, _y, hand.count);
   // if x is 0 for any card it gets misaligned
   let card_width = 98;
   if (hand.count > 8) (card_width -= hand.count);
   if (hand.count > 12) (card_width -= hand.count);
   if (hand.count * card_width > 790) { card_width = 790 / hand.count; }
 
-  const center = 400; //??
+  const center = 400 + 200;
   const width = hand.count * card_width;
   const left = (center - width / 2) || 1;
   console.log(left, width, center);
@@ -610,14 +747,43 @@ const Hand = ({ moves, hand, _y }) => {
     <div className="hand">
       {hand.cards.map((card, index) => (
         /*        <CardClickProvider> */
-        <Card key={uuidv4()} moves={moves[index]} card={card} x={x(left + card_width * index)} y={y(_y)} z={50} click={true} />
+        // uuidv4 because i don't want them tracked 
+        <Card id={card.split('@')[2] > 0 ? card.split('@')[2] : uuidv4()} key={index} moves={moves[index]} card={card} position={{ left: x(left + card_width * index), top: y(_y) }} z={50} click={true} />
         /*        </CardClickProvider> */
       ))}
     </div>
   );
 };
 
-const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
+const Card = ({ id, card, position: newPosition, z, rotate, click, moves /*, onCardAction*/ }) => {
+  console.log("making card " + id + " card " + card + " pos " + newPosition);
+  const initialRender = useRef(true);
+  const initialPosition = useRef(getCardPosition(id)); // Capture initial position
+  const [position, setPosition] = useState(initialPosition.current);
+  const prevPosition = useRef(initialPosition.current); // Ensure a default value for prevPosition
+
+  useEffect(() => {
+    if (newPosition) {
+      if (initialRender.current) {
+        initialRender.current = false;
+        updateCardPosition(id, newPosition);
+        prevPosition.current = newPosition;      // Make sure we set prevPosition to the newPosition on the first render
+        setPosition(newPosition);
+      } else {
+        const currentPosition = getCardPosition(id);
+        if (currentPosition.left !== newPosition.left || currentPosition.top !== newPosition.top) {
+          setPosition(newPosition);
+          updateCardPosition(id, newPosition);
+        }
+      }
+    }
+  }, [id, newPosition]);
+
+
+  // Track the last successful render's position
+  useEffect(() => {
+    prevPosition.current = position;
+  }, [position]);
 
   const closeMenu = () => {
     setShowMenu(false);
@@ -650,10 +816,14 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
 
   const context = useCardClick();
   const { handleCardClick } = context;
-  const absPosition = {
-    position: 'absolute', left: `${x}px`, top: `${y}px`, zIndex: z,
+
+
+  const rotation = { transform: `rotate(${rotate}deg)` }
+  const relPosition = { transform: `rotate(${rotate}deg)` };
+  const absPosition = newPosition ? {
+    position: 'absolute', left: `${newPosition.left}px`, top: `${newPosition.top}px`, zIndex: z,
     transform: `rotate(${rotate}deg)`
-  };
+  } : { transform: `rotate(${rotate}deg)` };
   const menuPosition = {
     position: 'absolute', left: `${x}px`, bottom: `${y}px`, zIndex: z + 1,
   };
@@ -665,48 +835,113 @@ const Card = ({ card, x, y, z, rotate, click, moves /*, onCardAction*/ }) => {
     //onCardAction(card);
   };
 
-  const relPosition = {};
   let show_modal = click ? (() => { closeMenu(); handleCardClick(imagesContext(card)) }) : undefined;
   let fn = moves ? handleHandCardClick : show_modal;
 
-
   if (showMenu) console.log(359, moves);
 
+  console.log(685, card, "ID" + id, position.left, position.top, "5555", prevPosition.left, prevPosition.top); // position.left, position.top, newPosition.left, newPosition.top, "X");
 
-  return (
-    <div onClick={fn} style={{ position: "relative" }}
-    >
-      <img cancel=".no-drag" src={imagesContext(card)} alt={card}
-        id={card.split('@')[0]}
-        style={x ? absPosition : relPosition}
-        className={`card ${moves ? 'card-action' : ''}`}
+
+  const initial = newPosition ? { x: prevPosition.current.left, y: prevPosition.current.top } : {}
+  const animate = newPosition ? { x: position.left, y: position.top } : {}
+
+  let duration = 0.6;
+  if (!initial.x && !initial.y) {
+    duration = 0.05; // i should just be able to set the original coordinates, right?
+  }
+
+  const style = relPosition;
+  const divstyle = newPosition ? {} : style;
+  const transition = newPosition ? { duration: duration, ease: 'easeInOut' } : {}
+
+  //     style={newPosition ? absPosition : relPosition}
+
+
+
+  let card_img = <img cancel=".no-drag" src={imagesContext(card)} alt={`Card ${id}`}
+    id={card.split('@')[2]}
+    style={id ? rotation : {}}
+    className={`card ${moves ? 'card-action' : ''}`}
+  />
+  let menuhtml = <div className="menu" style={menuPosition} >
+    <div >
+      <RecursiveMenu
+        moves={moves}
+        doButton={doButton}
+        closeMenu={closeMenu}
       />
-      {showMenu && (<div className="menu" style={menuPosition} >
-        <div >
-          <RecursiveMenu
-            moves={moves}
-            doButton={doButton}
-            closeMenu={closeMenu}
-          />
-          <button id="sendDELETEME" style={{ display: 'none' }}>SendDELETEME</button>
+      <button id="sendDELETEME" style={{ display: 'none' }}>SendDELETEME</button>
+    </div>
+    <button onClick={show_modal}>See Card</button>
+  </div>;
+
+  //   const style = newPosition ? {} : { left: x, top: y };
+  return (
+    <div onClick={fn} style={{ position: "relative", zIndex: z }}
+    >
+      {id ? <motion.div
+        className="xxx"
+        id={`card-${id}`}
+        layoutId={`card-${id}`}
+        initial={initial}
+        animate={animate}
+        style={relPosition}
+        transition={transition}
+      >
+        {card_img}
+        {showMenu && menuhtml}
+      </motion.div>
+        :
+        <div style={absPosition}  >
+          {card_img}
+          {showMenu && menuhtml}
         </div>
+      }
 
-
-        <button onClick={show_modal}>See Card</button>
-      </div>)}
 
     </div >
   );
 
 };
 
+const highlightedText = (text, alltexts, index) => {
+  let style = {};
+  if (!alltexts) return (<span>{text}</span>);
+  const alltext = alltexts[index];
+  if (!alltext) return (<span>{text}</span>);
+
+  const textArray = alltext.split(text);
+  if (textArray.length > 1) {
+    textArray.splice(1, 0, text);
+  }
+  return textArray.map((txt, index) => {
+    let style = {};
+    if (index === 0) {
+      style = {  }; // First element color
+    } else if (index === 1) {
+      style = { color: 'cyan' }; // Second element color
+    }
+
+    return (
+      <span key={index} style={style}>
+        {txt}
+      </span>
+    );
+  });
+  
+};
+
 const Chooser = ({ pile }) => {
 
+  console.log(904, pile);
   if (!pile || !pile.count) return (<hr />);
   if (!pile.cards) pile.cards = Array(pile.count).fill("back");
 
   const texts = pile.texts;
-  console.log(550, texts);
+  const alltexts = pile.alltexts;
+  
+  console.log(550, texts, alltexts);
   return (
     <div className="top-element" id="chooser">
       <Draggable cancel=".no-drag">
@@ -722,7 +957,7 @@ const Chooser = ({ pile }) => {
                 {pile.cards.map((card, index) => (
                   <td key={uuidv4()} width="200px" >
                     <div className="no-drag" style={{ zIndex: 60, opacity: "1", width: "50px", height: "200px" }}>
-                      <Card key={uuidv4()} card={card} moves={pile.moves[index]} />
+                      <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} moves={pile.moves && pile.moves[index]} />
                     </div>
                   </td>
                 ))}
@@ -731,7 +966,7 @@ const Chooser = ({ pile }) => {
                 {texts && texts.map((text, index) => (
                   <td key={uuidv4()} className="cardtext" width="200px" height="100px">
                     <div style={{ paddingTop: "0px" }}>
-                      {text}
+                      {highlightedText(text, alltexts, index)}
                     </div>
                   </td>
                 ))}
@@ -774,7 +1009,7 @@ const Reveal = ({ pile }) => {
                 {pile.cards.map((card, index) => (
                   <td key={uuidv4()} width="200px" >
                     <div style={{ zIndex: 60, opacity: "1", width: "50px", height: "200px" }}>
-                      <Card key={uuidv4()} card={card} />
+                      <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} />
                     </div>
                   </td>
                 ))}
@@ -807,14 +1042,51 @@ const Reveal = ({ pile }) => {
 };
 
 
-const Trash = ({ trash, x, y }) => (
+const Trash = ({ trash, x, y }) => {
 
-  <div className="trash">
-    {trash.map((card, index) => (
-      <Card key={uuidv4()} card={card} x={x + index * 2} y={y + index * 2} />
-    ))}
-  </div>
-);
+
+  /*  const closeTrash = () => {
+      setShowTrash(false);
+    }
+    const [showTrash, setShowTrash] = useState(false);
+  */
+  const doButton = (e) => {
+    console.log("DOING BUTTON 1001");
+    //    setShowTrash(true);
+  }
+
+  const context = useCardClick();
+  const { handlePileClick } = context;
+
+  let temp_pile = {
+    count: trash.length,
+    cards: trash
+  }
+
+  let fn = () => { handlePileClick(temp_pile) };
+
+  return (
+
+    <div onClick={fn} onTouchStart={fn} >
+      <div className="text-overlay" value={"SIZE: " + trash.length} dangerouslySetInnerHTML={{ __html: "TRASH SIZE:&nbsp;" + trash.length }}
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          left: `${x}px`,
+          top: `${y + 25}px`,
+          width: `80px`
+        }}
+      />
+
+      <div className="trash">
+        {trash.map((card, index) => (
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: x + index * 2, top: y + index * 2 }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const Security = ({ security, x, y, rot }) => {
   let cards = security.cards;
   //  cards =  ["BT19-052@GREEN,BLACK","BT18-046@GREEN,BLACK","BT18-046@GREEN,BLACK","back","back"];
@@ -829,7 +1101,7 @@ const Security = ({ security, x, y, rot }) => {
     <div className="wrapper">
       <div>
         {cards.map((card, index) => (
-          <Card key={uuidv4()} card={card} x={x + (index % 2 * 50)} y={y - index * delta} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card key={uuidv4()} card={card} position={{ left: x + (index % 2 * 50), top: y - index * delta }} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
     </div>
@@ -902,6 +1174,7 @@ const InputBox = ({ onSendMessage }) => {
         instance: blob.instance,
         card: blob.card,
         fulltext: blob.fulltext,
+        alltext: blob.alltext,
       };
       if (blob.choose) {
         choose = blob.choose;
@@ -1162,11 +1435,13 @@ const InputBox = ({ onSendMessage }) => {
 
   const card_ids = [];
   const texts = [];
+  const alltexts = [];
   let title = "";
   const moves = [];
   let send = document.getElementById("send");
   console.log(1173, "disable is ", (send && send.disabled));
   let can_show_cards = (send && send.disabled == false);
+
   for (let opt of formState.selectOptions) {
     if (opt.value === "json") { title = opt.label; continue; }
     if (!opt.card) {
@@ -1175,6 +1450,7 @@ const InputBox = ({ onSendMessage }) => {
     }
     card_ids.push(opt.card + "@grey");
     texts.push(opt.fulltext);
+    alltexts.push(opt.alltext);
     const move = [{ command: opt.value, text: "Choose " + opt.card }];
     moves.push(move); // command to run
     console.log(924, can_show_cards, opt);
@@ -1183,9 +1459,10 @@ const InputBox = ({ onSendMessage }) => {
   if (can_show_cards) {
     pile.cards = card_ids;
     pile.texts = texts;
+    pile.alltexts = alltexts;
     pile.moves = moves;
     pile.count = texts.length;
-    pile.title = title;
+    pile.title = title; 
   }
   console.log(936, pile);
 

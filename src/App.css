@@ -14,14 +14,21 @@ body {
 
   /* changed Anchored to the left edge */
   left: 0;
-  width: 800px;
+
+
+/* 
   height: 1120px;
 
-/*  background-image: url('./background.png');
-  background-size: contain;*/
+  width: 800px;
+  background-image: url('./background.png');
+  background-size: contain;
+    background-size: 130%;
+  */
 
+  height: 1200px;
+  width: 1200px;
   background-image: url('./display-mat.png'); 
-  background-size: 130%;
+  background-size: 86.6667%;
   background-color: lightgreen;
 
   background-position: left top;
@@ -68,6 +75,11 @@ body {
   /* Negative margin for overlap */
 }
 
+.cardwrapper {
+  position: absolute;
+  transition: left 0.5s ease-in-out, top 0.5s ease-in-out;
+}
+
 .card {
   width: 100px;
   height: 150px;
@@ -76,7 +88,9 @@ body {
   /* Ensure absolute positioning */
   background-color: lightblue;
   border: 0.5px solid #444;
-  transition: all 0.3s ease;
+  /*transition: all 0.3s ease;*/
+
+  transition: left 0.5s ease-in-out, top 0.5s ease-in-out; 
 }
 
 @keyframes pulse {
@@ -255,7 +269,7 @@ body {
 .inputbox {
   position: absolute;
   z-index: 1200;
-  top: 70px;
+  top: 10px;
   /* Use viewport height for better positioning */
 }
 
@@ -481,7 +495,7 @@ body {
   src: local('MyriadProBold'), url(./fonts/Myriad-Pro-Bold-SemiCondensed.otf) format('opentype');
 }
 
-.cardtext {
+.cardtext  {
   font-family: "MyriadProBold", Roboto, Helvetica;
   color: white;
   text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
