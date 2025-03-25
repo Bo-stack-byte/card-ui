@@ -17,7 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
-// Visualizer v0.7.4 highlighted text
+// Visualizer v0.7.4.1 highlighted text
 // Visualizer v0.7.3 goofy trash view
 // Visualizer v0.7.2 animation
 // Visualizer v0.7.1   plugged cards 
@@ -305,9 +305,9 @@ function TableTop({ response }) {
               if (!cards[handindex]) cards[handindex] = [];
               c = cards[handindex];
 
-              let e = c.find(x => x.text === 'Evolve2 on');
-              if (!e) { e = { text: "Evolve2 on", submenu: [] }; c.push(e); }
-              e.submenu.push({ parenttext: "Evolve2 on", text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
+              let e = c.find(x => x.text === 'Evolve on');
+              if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
+              e.submenu.push({ parenttext: "Evolve on", text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
               console.error(258, e);
               break;
             }

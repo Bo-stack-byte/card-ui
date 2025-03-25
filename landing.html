@@ -51,7 +51,10 @@ TKN-Familiar TKN-Familiar TKN-Familiar TKN-Familiar`;
 
       const millenniummon = "BT19-006 BT19-006 BT19-006 BT19-006 EX1-066 EX1-066 EX1-066 BT18-013 BT18-013 BT18-013 BT19-069 BT19-069 BT19-069 BT14-069 BT14-069 BT18-007 BT18-007 BT18-007 BT18-007 BT3-077 BT3-077 BT19-066 BT19-066 BT19-066 BT19-066 BT18-015 BT18-015 BT18-015 BT19-070 BT19-070 BT19-070 BT18-073 BT18-073 BT18-073 BT18-073 BT19-065 BT18-019 BT18-019 BT18-019 BT18-019 BT19-075 BT19-075 BT19-087 BT19-087 BT19-087 BT5-107 BT5-107 BT19-068 BT19-068 BT19-068 BT19-099 BT19-099 BT19-099 BT19-101"
 //f from       https://digimoncard.io/deck/millenniummon-105924 ?
-    
+      const fenriloogamon = '["Exported from https://digimoncard.io/deck/bt18-19-format-fenriloogamon-takemikazuchi-104360", "EX1-066", "EX1-066", "EX1-066", "BT17-091", "BT17-091", "BT17-091", "BT17-065", "BT17-065", "BT16-058", "BT16-058", "BT16-058", "BT16-058", "BT14-087", "BT14-087", "BT14-087", "BT17-069", "BT17-069", "BT17-069", "BT17-069", "BT17-101", "BT17-101", "BT17-101", "BT17-040", "BT17-040", "BT17-040", "BT14-071", "BT14-071", "BT14-071", "BT14-071", "BT15-071", "BT15-071", "BT15-071", "BT15-075", "BT15-075", "BT10-080", "BT10-080", "BT16-076", "BT16-076", "BT16-076", "BT16-076", "BT15-011", "BT15-011","LM-035", "LM-035", "LM-035", "LM-035", "BT14-078", "BT14-006", "BT14-006", "BT14-006", "BT14-006", "BT15-071", "BT15-011", "BT15-011"]' // removed ukko, added 3 at end
+
+      const bgimperial = '["Exported from https://digimoncard.io/deck/blue-green-imperial-115074", "LM-028", "BT3-093", "BT3-093", "BT16-085", "BT16-085", "BT16-085", "BT16-085", "BT12-022", "BT12-022", "BT12-022", "BT12-022", "EX1-014", "EX7-023", "EX7-023", "BT3-103", "EX1-068", "ST9-06", "BT16-028", "BT16-028", "BT16-027", "BT16-027", "LM-036", "BT8-053", "BT8-053", "BT16-025", "BT16-025", "BT16-025", "BT16-025", "ST9-05", "ST9-05", "BT17-097", "BT17-097", "BT12-050", "ST9-09", "ST9-09", "ST9-09", "ST9-09", "BT12-021", "BT12-021", "BT12-021", "BT12-021", "P-117", "P-117", "P-117", "BT12-047", "BT12-047", "BT12-047", "BT12-047", "BT16-040", "P-118", "BT12-002", "BT12-002", "BT12-002", "BT12-002"]';
+
       const shinegrey = '["Exported from https://digimoncard.io/deck/shinegreymon-106539", "BT12-034", "BT12-034", "BT12-034", "BT12-034", "BT13-008", "BT13-008", "BT13-008", "BT13-008", "BT17-029", "BT17-029", "BT17-029", "BT17-029", "BT17-099", "BT17-099", "BT12-038", "BT12-038", "BT12-038", "BT13-012", "BT17-033", "BT17-033", "BT17-033", "BT17-033", "BT12-092", "BT12-092", "BT12-092", "BT13-095", "BT13-095", "BT13-095", "BT17-087", "BT17-087", "BT17-087", "BT13-015", "BT13-015", "BT13-015", "BT17-037", "BT17-037", "BT17-037", "BT17-037", "BT12-043", "BT12-043", "BT17-039", "BT17-039", "BT17-039", "BT17-039", "BT13-020", "BT17-041", "BT17-041", "BT17-041", "P-037", "P-037", "BT12-003", "BT12-003", "BT12-003", "BT12-003"]';
       let presets = [
         { name: "ST7 RED Gallantmon", deck: st7 },
@@ -64,8 +67,10 @@ TKN-Familiar TKN-Familiar TKN-Familiar TKN-Familiar`;
         { name: "CUSTOM yellow-ish Shield Cat", deck: cs1 },
         { name: "CUSTOM blue-ish Sword Dog", deck: cs2 },
         { name: "Royal Base GREEN Simple", deck: royal_base1 },
-        { name: "!! EXPERIMENTAL Royal Base Complex", deck: royal_base2 },
-        { name: "!! EXPERIMENTAL Millenniummon", deck: millenniummon },
+        { name: "Royal Base Complex", deck: royal_base2 },
+        { name: "!! BUGGY Millenniummon", deck: millenniummon },
+        { name: "!! EXPERIMENTAL B/G Imperial", deck: bgimperial },
+        { name: "Fenriloogam", deck: fenriloogamon },
         { name: "Shinegreymon", deck: shinegrey },
       ];
     </script>
@@ -114,7 +119,6 @@ TKN-Familiar TKN-Familiar TKN-Familiar TKN-Familiar`;
                 const option2 = option.cloneNode(true);
                 //	  sel1.appendChild(option);
                 sel1.options.add(option);
-
                 sel2.options.add(option2);
 
                 //	  sel2.appendChild(option);
@@ -132,7 +136,10 @@ TKN-Familiar TKN-Familiar TKN-Familiar TKN-Familiar`;
               });
               // set to default
               sel1.value = "Royal Base GREEN Simple";
-              sel2.value = "ST19 YELLOW Fable Waltz";
+
+              let p2options = sel2.options;
+              let p2index = Math.floor(Math.random() * p2options.length)
+              sel2.value = p2options[p2index].value;
               var event = new Event('change');
               sel1.dispatchEvent(event);
               sel2.dispatchEvent(event);

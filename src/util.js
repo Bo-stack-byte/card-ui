@@ -1,5 +1,15 @@
 const unsafeImagesContext = require.context('./cards/', true, /\.png$/);
 
+const escapeHtml = (string) => {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return string.replace(/[&<>"']/g, (m) => map[m]);
+};
 
 export const imagesContext = (_cardname) => {
   if (_cardname === "eggback") return unsafeImagesContext("./eggback.png");
@@ -8,7 +18,7 @@ export const imagesContext = (_cardname) => {
   let [cardname, s_colors] = _cardname.split("@");
   s_colors ||= "ORANGE"
   let colors = s_colors.split(",");
-  colors ||= ["orange"]
+  //colors ||= ["orange"]
   let color1 = colors[0];
   let color2 = colors[1] || colors[0];
 
@@ -34,7 +44,7 @@ export const imagesContext = (_cardname) => {
    // let ess_arrays = ess_text.match(/.{1,80}/g) || []
     let eff_arrays = text.match(/.{1,80}(?=\s|$)/g) || []
     let ess_arrays = ess_text.match(/.{1,80}(?=\s|$)/g) || []
-
+    eff_arrays = eff_arrays.map( x => escapeHtml(x) );
     return 'data:image/svg+xml,' + encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">
     <defs>
@@ -45,10 +55,10 @@ export const imagesContext = (_cardname) => {
     </defs>
     <rect width="200" height="300" style="fill:url(#grad1);stroke-width:3;stroke:rgb(0,0,0)" />
     <text x="50%" y="25%" dominant-baseline="middle" text-anchor="middle" fill="black" stroke="white" font-size="30" font-family="Impact" font-weight="bold" >
-      ${cardname}
+      ${escapeHtml(cardname)}
     </text>
     <text x="50%" y="50%" font-family="Helvetica" dominant-baseline="middle" text-anchor="middle" fill="white" stroke="black" font-size="40" textLength="200" lengthAdjust="spacingAndGlyphs">
-      ${name}
+      ${escapeHtml(name)}
     </text>
     <text x="10" y="200" dominant-baseline="middle" fill="BLACK" stroke="black" font-size="30" font-family="Arial, Helvetica, sans-serif">
       ${lv}
