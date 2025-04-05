@@ -17,9 +17,10 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.7.4.2 more images
 // Visualizer v0.7.4.1 highlighted text
-// Visualizer v0.7.3 goofy trash view
-// Visualizer v0.7.2 animation
+// Visualizer v0.7.3   goofy trash view
+// Visualizer v0.7.2   animation
 // Visualizer v0.7.1   plugged cards 
 // Visualizer v0.7.0.x better background and image, link effects, bugs
 // Visualizer v0.6.5 more cards and option pop-ups
