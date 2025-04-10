@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.7.4.3 handle future UI update
 // Visualizer v0.7.4.2 more images
 // Visualizer v0.7.4.1 highlighted text
 // Visualizer v0.7.3   goofy trash view
@@ -317,7 +318,9 @@ function TableTop({ response }) {
                 handindex = link_source.id;
                 if (!cards[handindex]) cards[handindex] = [];
                 c = cards[handindex];
-              } else if (link_source.location === "FIELD") {
+              } else if (link_source.location === "BATTLE"
+                || link_source.location === "FIELD" // deprecated
+              ) {
                 instance = link_source.id;
                 if (!instances[instance]) instances[instance] = [];
                 c = instances[instance];
