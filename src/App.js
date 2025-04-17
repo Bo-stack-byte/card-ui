@@ -17,7 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
-// Visualizer v0.7.4.3 handle future UI update
+// Visualizer v0.7.4.3.1 handle future UI update
 // Visualizer v0.7.4.2 more images
 // Visualizer v0.7.4.1 highlighted text
 // Visualizer v0.7.3   goofy trash view
@@ -685,12 +685,15 @@ const Instance = ({ moves, instance, x, y }) => {
       <div className={`detail-overlay`} dangerouslySetInnerHTML={{ __html: instance.id }} style={{ width: '20px', textAlign: `right`, left: `${x + 80}px`, bottom: `${-y - 30}px` }} />
       <div style={{ zIndex: 2 }}>
         {plugs.map((card, index) => (
-          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: x + 20 + plug_delta * index, top: y }} z={10 - index} rotate={-90} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: x + 20 + plug_delta * index, top: y, rotate: -90 }} z={10 - index} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
       <div style={{ zIndex: 10 }} onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
         {instance.stack.map((card, index) => (
-          <Card id={card.split('@')[2]} key={card.split('@')[2]} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} position={{ left: x, top: top - index * delta }} z={30 + index} rotate={(index === count - 1 && instance.suspended) ? rot : 0} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} 
+          position={{ left: x, top: top - index * delta, rotate: (index === count - 1 && instance.suspended) ? rot : 0 }} 
+          z={30 + index} 
+          style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
       {false && showMenu && (<div className="menu" style={menuStyle}  >
@@ -759,7 +762,7 @@ const Hand = ({ moves, hand, _y }) => {
   );
 };
 
-const Card = ({ id, card, position: newPosition, z, rotate, click, moves /*, onCardAction*/ }) => {
+const Card = ({ id, card, position: newPosition, z, click, moves /*, onCardAction*/ }) => {
   console.log("making card " + id + " card " + card + " pos " + newPosition);
   const initialRender = useRef(true);
   const initialPosition = useRef(getCardPosition(id)); // Capture initial position
@@ -822,12 +825,12 @@ const Card = ({ id, card, position: newPosition, z, rotate, click, moves /*, onC
   const { handleCardClick } = context;
 
 
-  const rotation = { transform: `rotate(${rotate}deg)` }
-  const relPosition = { transform: `rotate(${rotate}deg)` };
+  const rotation = { transform: `rotate(${newPosition && newPosition.rotate}deg)` }
+  const relPosition = { transform: `rotate(${newPosition && newPosition.rotate}deg)` };
   const absPosition = newPosition ? {
     position: 'absolute', left: `${newPosition.left}px`, top: `${newPosition.top}px`, zIndex: z,
-    transform: `rotate(${rotate}deg)`
-  } : { transform: `rotate(${rotate}deg)` };
+    transform: `rotate(${newPosition && newPosition.rotate}deg)`
+  } : { transform: `rotate(${newPosition && newPosition.rotate}deg)` };
   const menuPosition = {
     position: 'absolute', left: `${x}px`, bottom: `${y}px`, zIndex: z + 1,
   };
@@ -1105,7 +1108,7 @@ const Security = ({ security, x, y, rot }) => {
     <div className="wrapper">
       <div>
         {cards.map((card, index) => (
-          <Card key={uuidv4()} card={card} position={{ left: x + (index % 2 * 50), top: y - index * delta }} z={30 + index} rotate={rot} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card key={uuidv4()} card={card} position={{ left: x + (index % 2 * 50), top: y - index * delta, rotate:rot }} z={30 + index} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
     </div>
