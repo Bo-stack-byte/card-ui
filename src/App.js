@@ -17,7 +17,8 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
-// Visualizer v0.7.4.3.1 handle future UI update
+// Visualizer v0.7.4.4 roll-up of bugs
+// Visualizer v0.7.4.3.2 handle future UI update
 // Visualizer v0.7.4.2 more images
 // Visualizer v0.7.4.1 highlighted text
 // Visualizer v0.7.3   goofy trash view
@@ -229,7 +230,8 @@ function TableTop({ response }) {
     let cards = [];
     let instances = [];
     let eggs = [];
-    let handindex, instance, instance2;
+    let trash = [];
+    let handindex, instance, instance2, trashindex;
     let c, i, m, target, cost;
     console.log(177, "moves", document.getElementById("send").disabled);
     if (bottom.moves && document.getElementById("send").disabled == false)
@@ -324,6 +326,14 @@ function TableTop({ response }) {
                 instance = link_source.id;
                 if (!instances[instance]) instances[instance] = [];
                 c = instances[instance];
+              } else if (link_source.location === "TRASH") {
+                  trashindex = link_source.id;
+                  if (!trash[trashindex]) trash[trashindex] = [];
+                  c = trash[trashindex];
+              } else {
+                console.error("unknown link source");
+                c = [];
+
               }
               instance = link_target.id;
               link_target = link_target.name;
