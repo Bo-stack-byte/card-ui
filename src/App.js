@@ -17,6 +17,8 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.7.6   link questions on cards
+// Visualizer v0.7.5   change layout of ESS and plugged cards
 // Visualizer v0.7.4.4 roll-up of bugs
 // Visualizer v0.7.4.3.2 handle future UI update
 // Visualizer v0.7.4.2 more images
@@ -248,6 +250,7 @@ function TableTop({ response }) {
         let words = cmd.split(" ");
         let link_source = opts.link_source;
         let link_target = opts.link_target;
+        let link_trash = opts.link_trash;
         switch (cmd.substring(0, 3)) {
           case "ExxxVO": // EVO hand instance cost instance2
             //let [, handindex, instance, cost, instance2] = words;
@@ -327,9 +330,9 @@ function TableTop({ response }) {
                 if (!instances[instance]) instances[instance] = [];
                 c = instances[instance];
               } else if (link_source.location === "TRASH") {
-                  trashindex = link_source.id;
-                  if (!trash[trashindex]) trash[trashindex] = [];
-                  c = trash[trashindex];
+                trashindex = link_source.id;
+                if (!trash[trashindex]) trash[trashindex] = [];
+                c = trash[trashindex];
               } else {
                 console.error("unknown link source");
                 c = [];
@@ -340,7 +343,11 @@ function TableTop({ response }) {
 
               let e = c.find(x => x.text === 'Link to');
               if (!e) { e = { text: "Link to", submenu: [] }; c.push(e); }
-              e.submenu.push({ parenttext: "Link to", text: `${link_target} ${instance} (${cost})`, command: cmd });
+              let trash_text = "";
+              if (link_trash) {
+                trash_text = " trashing " + link_trash.name;
+              }
+              e.submenu.push({ parenttext: "Link to", text: `${link_target} ${instance}${trash_text} (${cost})`, command: cmd });
               console.error(274, c);
               break;
 
@@ -647,9 +654,8 @@ const Instance = ({ moves, instance, x, y }) => {
   if (count > 4) delta -= count; // scrunch cards a bit if stack is big
   console.log("OVERRIDE DELTA");
   delta = 40;
-  let plug_delta = 30;
+  let plug_delta = 35;
   // console.log(`count is ${count} delta is ${delta}`);
-  let top = y + delta * (count - 1);
 
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
@@ -674,6 +680,21 @@ const Instance = ({ moves, instance, x, y }) => {
     setShowMenu(!showMenu);
     //onCardAction(card);
   };
+
+
+  let ypos = [];
+  let coordinate = 0;
+  for (let i = 0; i < instance.stack.length; i++) {
+    ypos[i] = coordinate;
+    coordinate += delta;
+    let card_id = instance.stack[i].split('@')[0];
+    let data = document.card_data[card_id];
+    if (data.ess.length < 3) coordinate -= delta * 0.6;
+    console.log(686, data.ess);
+    //    buffer += field[i].plugs.length * 35; // slide over for plugs
+  }
+  let top = y + coordinate;
+
   const instanceStyle = {
     position: 'absolute', left: `${x}px`, top: `${top}px`, zIndex: 90,
   };
@@ -686,6 +707,8 @@ const Instance = ({ moves, instance, x, y }) => {
   let rot = plugs.length ? 70 : 90; // if plugs, don't fully rotate
   // the instance isn't well-placed on the field, only its cards, 
   // so a card-acttion for it doesn't make much sense
+
+
 
   return (
     <div className={`wrapper ${false ? 'card-action' : ''}`}  >
@@ -700,10 +723,14 @@ const Instance = ({ moves, instance, x, y }) => {
       </div>
       <div style={{ zIndex: 10 }} onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
         {instance.stack.map((card, index) => (
-          <Card id={card.split('@')[2]} key={card.split('@')[2]} moves={index === instance.stack.length - 1 ? moves : undefined} card={card} 
-          position={{ left: x, top: top - index * delta, rotate: (index === count - 1 && instance.suspended) ? rot : 0 }} 
-          z={30 + index} 
-          style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} moves={index === instance.stack.length - 1 ? moves : undefined} card={card}
+            position={{
+              left: x,
+              top: top - ypos[index],
+              rotate: (index === count - 1 && instance.suspended) ? rot : 0
+            }}
+            z={30 + index}
+            style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
       {false && showMenu && (<div className="menu" style={menuStyle}  >
@@ -726,8 +753,8 @@ const Field = ({ moves, field, y, }) => {
   let xpos = [];
   let buffer = 0;
   for (let i = 0; i < field.length; i++) {
-    xpos[i] = 200 + i * 130 + buffer;
-    buffer += field[i].plugs.length * 30; // slide over for plugs
+    xpos[i] = 200 + i * 150 + buffer;
+    buffer += field[i].plugs.length * 35; // slide over for plugs
   }
   return (
     <div className="field">
@@ -935,7 +962,7 @@ const highlightedText = (text, alltexts, index) => {
   return textArray.map((txt, index) => {
     let style = {};
     if (index === 0) {
-      style = {  }; // First element color
+      style = {}; // First element color
     } else if (index === 1) {
       style = { color: 'cyan' }; // Second element color
     }
@@ -946,7 +973,7 @@ const highlightedText = (text, alltexts, index) => {
       </span>
     );
   });
-  
+
 };
 
 const Chooser = ({ pile }) => {
@@ -957,7 +984,7 @@ const Chooser = ({ pile }) => {
 
   const texts = pile.texts;
   const alltexts = pile.alltexts;
-  
+
   console.log(550, texts, alltexts);
   return (
     <div className="top-element" id="chooser">
@@ -1118,7 +1145,7 @@ const Security = ({ security, x, y, rot }) => {
     <div className="wrapper">
       <div>
         {cards.map((card, index) => (
-          <Card key={uuidv4()} card={card} position={{ left: x + (index % 2 * 50), top: y - index * delta, rotate:rot }} z={30 + index} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
+          <Card key={uuidv4()} card={card} position={{ left: x + (index % 2 * 50), top: y - index * delta, rotate: rot }} z={30 + index} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
     </div>
@@ -1479,7 +1506,7 @@ const InputBox = ({ onSendMessage }) => {
     pile.alltexts = alltexts;
     pile.moves = moves;
     pile.count = texts.length;
-    pile.title = title; 
+    pile.title = title;
   }
   console.log(936, pile);
 
