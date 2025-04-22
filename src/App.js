@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.1   new starter decks
 // Visualizer v0.8.0   improved buttons
 // Visualizer v0.7.6   link questions on cards
 // Visualizer v0.7.5   change layout of ESS and plugged cards
