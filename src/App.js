@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.0   improved buttons
 // Visualizer v0.7.6   link questions on cards
 // Visualizer v0.7.5   change layout of ESS and plugged cards
 // Visualizer v0.7.4.4 roll-up of bugs
@@ -684,8 +685,10 @@ const Instance = ({ moves, instance, x, y }) => {
 
   let ypos = [];
   let coordinate = 0;
+  let top = y;
   for (let i = 0; i < instance.stack.length; i++) {
     ypos[i] = coordinate;
+    top = y + coordinate;
     coordinate += delta;
     let card_id = instance.stack[i].split('@')[0];
     let data = document.card_data[card_id];
@@ -693,11 +696,11 @@ const Instance = ({ moves, instance, x, y }) => {
     console.log(686, data.ess);
     //    buffer += field[i].plugs.length * 35; // slide over for plugs
   }
-  let top = y + coordinate;
 
   const instanceStyle = {
     position: 'absolute', left: `${x}px`, top: `${top}px`, zIndex: 90,
   };
+  // unused?
   const menuStyle = {
     position: 'absolute', left: `${x}px`, top: `${y + 10}px`, zIndex: 90,
   }
@@ -767,8 +770,8 @@ const Field = ({ moves, field, y, }) => {
   );
 }
 // for scaling
-function x(x) { return x; }
-function y(y) { return y; }
+//function x(x) { return x; }
+//gfunction y(y) { return y; }
 
 
 const Hand = ({ moves, hand, _y }) => {
@@ -792,14 +795,14 @@ const Hand = ({ moves, hand, _y }) => {
       {hand.cards.map((card, index) => (
         /*        <CardClickProvider> */
         // uuidv4 because i don't want them tracked 
-        <Card id={card.split('@')[2] > 0 ? card.split('@')[2] : uuidv4()} key={index} moves={moves[index]} card={card} position={{ left: x(left + card_width * index), top: y(_y) }} z={50} click={true} />
+        <Card offset="-20px" id={card.split('@')[2] > 0 ? card.split('@')[2] : uuidv4()} key={index} moves={moves[index]} card={card} position={{ left: left + card_width * index, top: _y }} z={50} click={true} />
         /*        </CardClickProvider> */
       ))}
     </div>
   );
 };
 
-const Card = ({ id, card, position: newPosition, z, click, moves /*, onCardAction*/ }) => {
+const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onCardAction*/ }) => {
   console.log("making card " + id + " card " + card + " pos " + newPosition);
   const initialRender = useRef(true);
   const initialPosition = useRef(getCardPosition(id)); // Capture initial position
@@ -834,25 +837,23 @@ const Card = ({ id, card, position: newPosition, z, click, moves /*, onCardActio
   }
   const [showMenu, setShowMenu] = useState(false);
 
-
-  //  const [isEnlarged, setIsEnlarged] = useState(false);
-
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
-    let send = document.getElementById("send");
+    console.log(371, "BUTTON", e, e.target.value);
+    const value = e.target.value;
+    sideSubmit(value);
+  }
+  const sideSubmit = (value) => {
+    console.log(846, value);
+   let send = document.getElementById("send");
     send.disabled = true;
     setShowMenu(false);
-    console.log(371, "BUTTON", e.target.value);
-    let value = e.target.value;
     setFormState({
       ...formState,
       selectedValue: value,
     });
-    console.log(177, "disabling send");
-    //send.disabled = true;
-    setTimeout(() => { //send.disabled = true;
+    setTimeout(() => { 
       console.log("doing disable flip");
-      // this juggling was necessary to stop double-clicks
       send.disabled = false; send.click(); send.disabled = true;
       console.log(177, 'disabld send');
     }, 0);
@@ -869,19 +870,22 @@ const Card = ({ id, card, position: newPosition, z, click, moves /*, onCardActio
     transform: `rotate(${newPosition && newPosition.rotate}deg)`
   } : { transform: `rotate(${newPosition && newPosition.rotate}deg)` };
   const menuPosition = {
-    position: 'absolute', left: `${x}px`, bottom: `${y}px`, zIndex: z + 1,
+    position: 'absolute',
+     bottom: offset, zIndex: z + 4,
   };
-
   const handleHandCardClick = () => {
     console.log(350, showMenu);
     if (!showMenu)
       setShowMenu(!showMenu);
-    //onCardAction(card);
   };
 
-  let show_modal = click ? (() => { closeMenu(); handleCardClick(imagesContext(card)) }) : undefined;
-  let fn = moves ? handleHandCardClick : show_modal;
+  let show_modal = true ? (() => { closeMenu(); handleCardClick(imagesContext(card)) }) : undefined;
 
+  let nested_value;
+  let fn = moves ? handleHandCardClick : show_modal;
+  if (moves && moves[0] && moves[0].text === "CLICK") {
+    fn = () => sideSubmit(moves[0].command);
+  }
   if (showMenu) console.log(359, moves);
 
   console.log(685, card, "ID" + id, position.left, position.top, "5555", prevPosition.left, prevPosition.top); // position.left, position.top, newPosition.left, newPosition.top, "X");
@@ -905,6 +909,7 @@ const Card = ({ id, card, position: newPosition, z, click, moves /*, onCardActio
 
   let card_img = <img cancel=".no-drag" src={imagesContext(card)} alt={`Card ${id}`}
     id={card.split('@')[2]}
+    value={nested_value}
     style={id ? rotation : {}}
     className={`card ${moves ? 'card-action' : ''}`}
   />
@@ -1495,7 +1500,7 @@ const InputBox = ({ onSendMessage }) => {
     card_ids.push(opt.card + "@grey");
     texts.push(opt.fulltext);
     alltexts.push(opt.alltext);
-    const move = [{ command: opt.value, text: "Choose " + opt.card }];
+    const move = [{ command: opt.value, text: "CLICK" }];
     moves.push(move); // command to run
     console.log(924, can_show_cards, opt);
   }
