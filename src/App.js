@@ -17,7 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
-// Visualizer v0.8.1   new starter decks
+// Visualizer v0.8.1.x new starter decks
 // Visualizer v0.8.0   improved buttons
 // Visualizer v0.7.6   link questions on cards
 // Visualizer v0.7.5   change layout of ESS and plugged cards
@@ -693,8 +693,8 @@ const Instance = ({ moves, instance, x, y }) => {
     coordinate += delta;
     let card_id = instance.stack[i].split('@')[0];
     let data = document.card_data[card_id];
-    if (data.ess.length < 3) coordinate -= delta * 0.6;
-    console.log(686, data.ess);
+    if (data && data.ess && data.ess.length < 3) coordinate -= delta * 0.6;
+    console.log(686, data && data.ess);
     //    buffer += field[i].plugs.length * 35; // slide over for plugs
   }
 
