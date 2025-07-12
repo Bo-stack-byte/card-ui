@@ -17,6 +17,8 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.3   refresh after long break
+// Visualizer v0.8.2   new customs
 // Visualizer v0.8.1.x new starter decks
 // Visualizer v0.8.0   improved buttons
 // Visualizer v0.7.6   link questions on cards
@@ -253,6 +255,8 @@ function TableTop({ response }) {
         let link_source = opts.link_source;
         let link_target = opts.link_target;
         let link_trash = opts.link_trash;
+        let attack_source = opts.attack_source;
+        let attack_dest = opts.attack_dest;
         switch (cmd.substring(0, 3)) {
           case "ExxxVO": // EVO hand instance cost instance2
             //let [, handindex, instance, cost, instance2] = words;
@@ -287,7 +291,7 @@ function TableTop({ response }) {
             c = cards[handindex];
             c.push({ command: cmd, text: text });
             break;
-          case "ATT": // ...EVO hand instance cost instance2
+          case "ATxxxT": // ...EVO hand instance cost instance2
             [, instance,] = words;
             if (!instances[instance]) instances[instance] = [];
             i = instances[instance];
@@ -306,6 +310,10 @@ function TableTop({ response }) {
             break;
           case "json": break;
           default:
+            if (text.startsWith("Do not ") || text.startsWith("Don't ")) {
+              eggs.push({ command: cmd, text: text });
+              break;
+            }
             if (evo_card && evo_card.location === "HAND") {
               handindex = evo_card.id;
               instance = evo_left && evo_left.id;
@@ -318,6 +326,13 @@ function TableTop({ response }) {
               if (!e) { e = { text: "Evolve on", submenu: [] }; c.push(e); }
               e.submenu.push({ parenttext: "Evolve on", text: `${evo_target} ${instance} ${instance2 || ""} (${cost})`, command: cmd });
               console.error(258, e);
+              break;
+            }
+            if (attack_source) {
+              instance = attack_source;
+              if (!instances[instance]) instances[instance] = [];
+              i = instances[instance];
+              i.push({ command: cmd, text: text });
               break;
             }
             if (link_source) {
@@ -756,8 +771,9 @@ const Field = ({ moves, field, y, }) => {
   console.log(425, moves);
   let xpos = [];
   let buffer = 0;
+  //y += 30;
   for (let i = 0; i < field.length; i++) {
-    xpos[i] = 200 + i * 150 + buffer;
+    xpos[i] = 200 + i * 150 + buffer; //   + 300; 
     buffer += field[i].plugs.length * 35; // slide over for plugs
   }
   return (
@@ -846,14 +862,14 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
   }
   const sideSubmit = (value) => {
     console.log(846, value);
-   let send = document.getElementById("send");
+    let send = document.getElementById("send");
     send.disabled = true;
     setShowMenu(false);
     setFormState({
       ...formState,
       selectedValue: value,
     });
-    setTimeout(() => { 
+    setTimeout(() => {
       console.log("doing disable flip");
       send.disabled = false; send.click(); send.disabled = true;
       console.log(177, 'disabld send');
@@ -872,7 +888,7 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
   } : { transform: `rotate(${newPosition && newPosition.rotate}deg)` };
   const menuPosition = {
     position: 'absolute',
-     bottom: offset, zIndex: z + 4,
+    bottom: offset, zIndex: z + 4,
   };
   const handleHandCardClick = () => {
     console.log(350, showMenu);
