@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.4   handle some face down cards, updated landing page
 // Visualizer v0.8.3   refresh after long break
 // Visualizer v0.8.2   new customs
 // Visualizer v0.8.1.x new starter decks
@@ -232,6 +233,7 @@ function TableTop({ response }) {
     let top = (pid === 1) ? data.p2 : data.p1;
     let bottom = (pid === 1) ? data.p1 : data.p2;
 
+    let egg_id = bottom.eggzone?.id;
     // show moves; instances are for both players, but "egg" and "hand" only for bottom player
     let cards = [];
     let instances = [];
@@ -299,9 +301,13 @@ function TableTop({ response }) {
             break;
           case "MAI": // ...EVO hand instance cost instance2
             [, instance] = words;
-            if (!instances[instance]) instances[instance] = [];
-            i = instances[instance];
-            i.push({ command: cmd, text: text });
+            if (instance == egg_id) {
+              eggs.push({ command: cmd, text: text });
+            } else {
+              if (!instances[instance]) instances[instance] = [];
+              i = instances[instance];
+              i.push({ command: cmd, text: text });
+            }
             break;
           case "HAT":
           case "RAI":
@@ -896,7 +902,7 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
       setShowMenu(!showMenu);
   };
 
-  let show_modal = true ? (() => { closeMenu(); handleCardClick(imagesContext(card)) }) : undefined;
+  let show_modal = true ? (() => { closeMenu(); handleCardClick(imagesContext(card, false)) }) : undefined;
 
   let nested_value;
   let fn = moves ? handleHandCardClick : show_modal;
@@ -971,12 +977,19 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
 
 };
 
+// maybe not needed after all
+function escapeRegEx(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 const highlightedText = (text, alltexts, index) => {
   let style = {};
   if (!alltexts) return (<span>{text}</span>);
-  const alltext = alltexts[index];
+  let alltext = alltexts[index];
   if (!alltext) return (<span>{text}</span>);
-
+  alltext = alltext.replace(/\u00A0/g, " ");
+  text = text.replace(/\u00A0/g, " ");;
+ // text = escapeRegEx(text);
   const textArray = alltext.split(text);
   if (textArray.length > 1) {
     textArray.splice(1, 0, text);

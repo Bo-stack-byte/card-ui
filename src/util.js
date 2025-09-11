@@ -11,7 +11,15 @@ const escapeHtml = (string) => {
   return string.replace(/[&<>"']/g, (m) => map[m]);
 };
 
-export const imagesContext = (_cardname) => {
+export const imagesContext = (_cardname_full, small = true) => {
+
+  // show the second half only if zooming in and it exists
+  let _cardname = _cardname_full;
+  let smalllarge = _cardname_full.split("/");
+  if (smalllarge.length > 1) {
+    _cardname = smalllarge[small ? 0 : 1];    
+  }
+
   if (_cardname === "eggback") return unsafeImagesContext("./eggback.png");
   if (_cardname === "back") return unsafeImagesContext("./back.png");
 
