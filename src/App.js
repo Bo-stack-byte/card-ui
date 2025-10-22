@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.5   better trash; context menus in trash
 // Visualizer v0.8.4   handle some face down cards, updated landing page
 // Visualizer v0.8.3   refresh after long break
 // Visualizer v0.8.2   new customs
@@ -252,6 +253,7 @@ function TableTop({ response }) {
         let evo_right = opts.evo_right;
         let evo_target = opts.evo_target;
         let evo_card = opts.evo_card;
+        let main_card = opts.main_card;
         let cost = opts.cost;
         let words = cmd.split(" ");
         let link_source = opts.link_source;
@@ -299,7 +301,7 @@ function TableTop({ response }) {
             i = instances[instance];
             i.push({ command: cmd, text: text });
             break;
-          case "MAI": // ...EVO hand instance cost instance2
+          case "MxxxI": // ...EVO hand instance cost instance2
             [, instance] = words;
             if (instance == egg_id) {
               eggs.push({ command: cmd, text: text });
@@ -319,6 +321,28 @@ function TableTop({ response }) {
             if (text.startsWith("Do not ") || text.startsWith("Don't ")) {
               eggs.push({ command: cmd, text: text });
               break;
+            }
+            if (main_card) {
+              // TODO: HAND MAIN
+              if (main_card.location === "FIELD") {
+                instance = main_card.id;
+                if (instance == egg_id) {
+                  eggs.push({ command: cmd, text: text });
+                } else {
+                  if (!instances[instance]) instances[instance] = [];
+                  i = instances[instance];
+                  i.push({ command: cmd, text: text });
+                }
+                break;
+              }
+              if (main_card.location === "TRASH") {
+                trashindex = main_card.id;
+                console.log(339.1, trashindex);
+                if (!trash[trashindex]) trash[trashindex] = [];
+                c = trash[trashindex];
+                c.push({ command: cmd, text: text });
+                console.log(339.2, c); 
+              }
             }
             if (evo_card && evo_card.location === "HAND") {
               handindex = evo_card.id;
@@ -407,7 +431,7 @@ function TableTop({ response }) {
         />
         <Counter position={relative_memory} />
         <PlayerArea key={6000} player={bottom} bottom={1} instanceMoves={instances}
-          handMoves={cards} eggMoves={eggs}
+          handMoves={cards} eggMoves={eggs} trashMoves={trash}
           className="bottom" />
       </div>
     );
@@ -474,7 +498,7 @@ let coordinates = {
 }
 
 
-const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMoves }) => {
+const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMoves, trashMoves }) => {
   //       <Pile x={800} y={-200} pilelength={player.trash} />
   let height = 2000;
   let bot = (bottom === 1);
@@ -584,7 +608,7 @@ const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMo
 
       <EggZone moves={eggMoves} eggzone={player.eggzone} x={c.Egg.x} y={c.Egg.y} />
       <Deck bottom={bottom} x={c.Deck.x} y={c.Deck.y} name={"deck"} pile={player.deck} card="back" />
-      <Trash trash={player.trash} x={c.Trash.x} y={c.Trash.y} />
+      <Trash moves={trashMoves} trash={player.trash} x={c.Trash.x} y={c.Trash.y} />
       <Field moves={instanceMoves} field={player.field} y={c.Field.y} />
       <Hand moves={handMoves} hand={player.hand} _y={c.Hand.y} />
       <Security security={player.security} x={c.Security.x} y={c.Security.y} rot={bot ? 270 : 90} />
@@ -801,7 +825,6 @@ const Hand = ({ moves, hand, _y }) => {
 
   if (!hand.cards) hand.cards = Array(hand.count).fill("back");
 
-  console.log(633, _y, hand.count);
   // if x is 0 for any card it gets misaligned
   let card_width = 98;
   if (hand.count > 8) (card_width -= hand.count);
@@ -1121,7 +1144,7 @@ const Reveal = ({ pile }) => {
 };
 
 
-const Trash = ({ trash, x, y }) => {
+const Trash = ({ moves, trash, x, y }) => {
 
 
   /*  const closeTrash = () => {
@@ -1134,19 +1157,45 @@ const Trash = ({ trash, x, y }) => {
     //    setShowTrash(true);
   }
 
+  // do I even nee the context stuff any more?>???
   const context = useCardClick();
   const { handlePileClick } = context;
+
+  const [showWidth, setShowWidth] = useState(false);
 
   let temp_pile = {
     count: trash.length,
     cards: trash
   }
 
-  let fn = () => { handlePileClick(temp_pile) };
+  // do i get rid of handlepileclick??
+  let fn = () => { }; // handlePileClick(temp_pile) };
+
+  trash = trash ?? [];
+  moves = moves ?? [];
+  const activeCards = trash.filter((card, index) => !!moves[index]);
+  const inactiveCards = trash.filter((card, index) => !moves[index]);
+  const activeMoves = (moves || []).filter(x => !!x);
+
+  const activeCardWidth = 90;
+  let inactive_x = x + activeCards.length * activeCardWidth;
+  const delta = showWidth ? 50 : 2; 
 
   return (
 
     <div onClick={fn} onTouchStart={fn} >
+      {trash && <button onClick={() => setShowWidth(prev => !prev)}
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          left: `${x}px`,
+          top: `${y + 45}px`,
+          zIndex: 210,
+        }}
+        >
+        {showWidth ? '>><<' : '<<>>'}
+      </button>}
+
       <div className="text-overlay" value={"SIZE: " + trash.length} dangerouslySetInnerHTML={{ __html: "TRASH SIZE:&nbsp;" + trash.length }}
         style={{
           display: 'flex',
@@ -1156,10 +1205,12 @@ const Trash = ({ trash, x, y }) => {
           width: `80px`
         }}
       />
-
       <div className="trash">
-        {trash.map((card, index) => (
-          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: x + index * 2, top: y + index * 2 }} />
+        {activeCards.map((card, index) => (
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} moves={activeMoves[index]} position={{ left: x + index * activeCardWidth, top: y + index * 2 }} />
+        ))}
+        {inactiveCards.map((card, index) => (
+          <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: inactive_x + index * delta, top: y + index * 2 }} />
         ))}
       </div>
     </div>
