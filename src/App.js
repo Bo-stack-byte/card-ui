@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.6.1 fixed stupid stuff that stopped menus from persisting; also force menus to not persist
 // Visualizer v0.8.5   better trash; context menus in trash
 // Visualizer v0.8.4   handle some face down cards, updated landing page
 // Visualizer v0.8.3   refresh after long break
@@ -108,30 +109,21 @@ const CardClickContext = createContext();
 export const useCardClick = () => useContext(CardClickContext);
 export const CardClickProvider = ({ children }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPileOpen, setIsPileOpen] = useState(false);
-  const [pile, setPile] = useState([]);
   const [selectedImage, setSelectedImage] = useState('');
   const handleCardClick = (imageUrl) => {
     setSelectedImage(imageUrl);
     setIsModalOpen(true);
   };
-  const handlePileClick = (pile) => {
-    setPile(pile);
-    setIsPileOpen(true);
-  }
   const closeModal = () => { setIsModalOpen(false); };
-  const closePile = () => { setIsPileOpen(false); };
   return (
     <CardClickContext.Provider value={{
       handleCardClick, selectedImage, isModalOpen, closeModal,
-      handlePileClick, pile, isPileOpen, closePile,
     }}>
       {children}
     </CardClickContext.Provider>
   );
 };
 
-const initialData = {}
 
 const App = () => {
   // const [data] = useState(initialData);
@@ -167,6 +159,11 @@ const App = () => {
     }
   }
 
+  useEffect(() => {
+    console.log(`Component mounted APP  `);
+  }, []);
+
+
 
   return (
     <div className="game-field">
@@ -192,21 +189,11 @@ const App = () => {
           </div>
           <TableTop response={message} onSendMessage={handleSendMessage} />
           <CardModalController />
-          <PileModalController />
         </CardClickProvider>
       </FormProvider>
 
     </div>
   );
-};
-
-const PileModalController = () => {
-  const { pile, isPileOpen, closePile } = useCardClick();
-  //  console.log('ModalController re-render', { selectedImage, isModalOpen });
-  if (!isPileOpen) return;
-  return (<div onClick={closePile} onTouchStart={closePile}>
-    <Chooser pile={pile} />
-  </div>);
 };
 
 const CardModalController = () => {
@@ -219,6 +206,10 @@ function TableTop({ response }) {
   let _response = response ? JSON.parse(response) : null;
   let data = _response;
   const { formState, setFormState } = useContext(FormContext);
+
+  useEffect(() => {
+    console.log(`Component mounted TABLETOP ${response} `);
+  }, []);
 
 
   useEffect(() => {
@@ -341,7 +332,7 @@ function TableTop({ response }) {
                 if (!trash[trashindex]) trash[trashindex] = [];
                 c = trash[trashindex];
                 c.push({ command: cmd, text: text });
-                console.log(339.2, c); 
+                console.log(339.2, c);
               }
             }
             if (evo_card && evo_card.location === "HAND") {
@@ -399,7 +390,8 @@ function TableTop({ response }) {
               break;
 
             }
-            // do we have target ids?
+            // do we have target ids? 
+            // maybe these should use the sama data structs as other moves
             if (!target_id) break;
             if (target_id.kind === "CardLocation") {
               if (target_id.location === "HAND") {
@@ -408,7 +400,14 @@ function TableTop({ response }) {
                 c = cards[handindex];
                 c.push({ command: cmd, text: text });
                 // CS1-02
+              } else if (target_id.location === "TRASH") {
+                trashindex = Number(target_id.id);
+                if (!trash[trashindex]) trash[trashindex] = [];
+                c = trash[trashindex];
+                c.push({ command: cmd, text: text });
+                // CS1-02
               }
+
             } else {
               instance = Number(target_id.id);
               if (!instances[instance]) instances[instance] = [];
@@ -503,7 +502,14 @@ const PlayerArea = ({ player, className, bottom, instanceMoves, eggMoves, handMo
   let height = 2000;
   let bot = (bottom === 1);
 
+
+  useEffect(() => {
+    console.log(`Component mounted PLAYERAREA  ${player} `);
+  }, []);
+
+
   // for evo lines
+
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   useEffect(() => {
@@ -696,6 +702,10 @@ const Instance = ({ moves, instance, x, y }) => {
   }
   const [showMenu, setShowMenu] = useState(false);
 
+  useEffect(() => {
+    console.log(`Component mounted INSTANCE ${x} ${y} `);
+  }, []);
+
   let count = instance.stack.length;
   let delta = 25; //  - count * 3;
   if (count > 4) delta -= count; // scrunch cards a bit if stack is big
@@ -722,11 +732,6 @@ const Instance = ({ moves, instance, x, y }) => {
     }, 1);
   }
 
-  const handleInstanceCardClick = () => {
-    console.log(350, showMenu);
-    setShowMenu(!showMenu);
-    //onCardAction(card);
-  };
 
 
   let ypos = [];
@@ -751,7 +756,6 @@ const Instance = ({ moves, instance, x, y }) => {
     position: 'absolute', left: `${x}px`, top: `${y + 10}px`, zIndex: 90,
   }
 
-  let fn = moves ? handleInstanceCardClick : undefined;
   let plugs = instance.plugs || [];
   let rot = plugs.length ? 70 : 90; // if plugs, don't fully rotate
   // the instance isn't well-placed on the field, only its cards, 
@@ -770,7 +774,7 @@ const Instance = ({ moves, instance, x, y }) => {
           <Card id={card.split('@')[2]} key={card.split('@')[2]} card={card} position={{ left: x + 20 + plug_delta * index, top: y, rotate: -90 }} z={10 - index} style={{ top: '80%', left: `${10 + index * 15}%`, }} />
         ))}
       </div>
-      <div style={{ zIndex: 10 }} onClick={fn} styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
+      <div style={{ zIndex: 10 }}  styfle={instanceStyle} clasfsName={moves ? 'card-action' : ''} >
         {instance.stack.map((card, index) => (
           <Card id={card.split('@')[2]} key={card.split('@')[2]} moves={index === instance.stack.length - 1 ? moves : undefined} card={card}
             position={{
@@ -806,11 +810,17 @@ const Field = ({ moves, field, y, }) => {
     xpos[i] = 200 + i * 150 + buffer; //   + 300; 
     buffer += field[i].plugs.length * 35; // slide over for plugs
   }
+
+  useEffect(() => {
+    console.log(`Component mounted FIELD ${field} ${y} `);
+  }, []);
+
+
   return (
     <div className="field">
       {field.map((instance, index) => (
-        <div className="field-instance" key={uuidv4()}>
-          <Instance key={uuidv4()} moves={moves[instance.id]} instance={instance} x={xpos[index]} y={y} />
+        <div className="field-instance" key={`wrapper-iid-${instance.id}`}>
+          <Instance key={`iid-${instance.id}`} moves={moves[instance.id]} instance={instance} x={xpos[index]} y={y} />
         </div>
       ))}
     </div>
@@ -855,6 +865,13 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
   const [position, setPosition] = useState(initialPosition.current);
   const prevPosition = useRef(initialPosition.current); // Ensure a default value for prevPosition
 
+  // to globally clear menus
+  useEffect(() => {
+    const handler = () => setShowMenu(false);
+    window.addEventListener("reset-menus", handler);
+    return () => window.removeEventListener("reset-menus", handler);
+  }, []);
+
   useEffect(() => {
     if (newPosition) {
       if (initialRender.current) {
@@ -883,21 +900,54 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
   }
   const [showMenu, setShowMenu] = useState(false);
 
+  useEffect(() => {
+    console.log(`Component mounted CARD ${id} ${newPosition} `);
+  }, []);
+  /*
+    useEffect(() => {
+      console.trace("showMenu CARD is now:", showMenu);
+    }, [showMenu]);
+  */
+
   const { formState, setFormState } = useContext(FormContext);
   const doButton = (e) => {
     console.log(371, "BUTTON", e, e.target.value);
     const value = e.target.value;
     sideSubmit(value);
   }
+  // for multi-selects, isSelected is a function, else it's false.
+  const selectRef = document.getElementById("command");
+  const isSelected = selectRef.multiple ?
+    // function
+    (value) => {
+      let ret = formState.selectedValue.includes(value);
+      return ret;
+    } : false;
+  const toggleSelect = (e) => {
+    const value = e.target.value;
+    const isSelected = formState.selectedValue.includes(value);
+    let prev = formState.selectedValue;
+    if (!Array.isArray(prev)) prev = [];
+    setFormState({
+      ...formState,
+      selectedValue: isSelected
+        ? prev.filter(v => v !== value) // remove it
+        : [...prev, value]              // add it
+    });
+    // doesn't submit!
+  }
+
   const sideSubmit = (value) => {
     console.log(846, value);
     let send = document.getElementById("send");
     send.disabled = true;
     setShowMenu(false);
-    setFormState({
-      ...formState,
-      selectedValue: value,
-    });
+    if (value != "multiSelect") {
+      setFormState({
+        ...formState,
+        selectedValue: value,
+      });
+    }
     setTimeout(() => {
       console.log("doing disable flip");
       send.disabled = false; send.click(); send.disabled = true;
@@ -919,13 +969,18 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
     position: 'absolute',
     bottom: offset, zIndex: z + 4,
   };
+  // even though this is "handcard" it's being called for field cards.
   const handleHandCardClick = () => {
-    console.log(350, showMenu);
     if (!showMenu)
-      setShowMenu(!showMenu);
+      setShowMenu(true);
+
   };
 
-  let show_modal = true ? (() => { closeMenu(); handleCardClick(imagesContext(card, false)) }) : undefined;
+  const show_modal = () => {
+    // why are we closing it?
+    closeMenu();
+    handleCardClick(imagesContext(card, false));
+  };
 
   let nested_value;
   let fn = moves ? handleHandCardClick : show_modal;
@@ -965,6 +1020,8 @@ const Card = ({ id, card, position: newPosition, z, click, moves, offset /*, onC
         moves={moves}
         doButton={doButton}
         closeMenu={closeMenu}
+        isSelected={isSelected}
+        toggleSelect={toggleSelect}
       />
       <button id="sendDELETEME" style={{ display: 'none' }}>SendDELETEME</button>
     </div>
@@ -1012,7 +1069,7 @@ const highlightedText = (text, alltexts, index) => {
   if (!alltext) return (<span>{text}</span>);
   alltext = alltext.replace(/\u00A0/g, " ");
   text = text.replace(/\u00A0/g, " ");;
- // text = escapeRegEx(text);
+  // text = escapeRegEx(text);
   const textArray = alltext.split(text);
   if (textArray.length > 1) {
     textArray.splice(1, 0, text);
@@ -1159,7 +1216,6 @@ const Trash = ({ moves, trash, x, y }) => {
 
   // do I even nee the context stuff any more?>???
   const context = useCardClick();
-  const { handlePileClick } = context;
 
   const [showWidth, setShowWidth] = useState(false);
 
@@ -1179,7 +1235,7 @@ const Trash = ({ moves, trash, x, y }) => {
 
   const activeCardWidth = 90;
   let inactive_x = x + activeCards.length * activeCardWidth;
-  const delta = showWidth ? 50 : 2; 
+  const delta = showWidth ? 50 : 2;
 
   return (
 
@@ -1192,7 +1248,7 @@ const Trash = ({ moves, trash, x, y }) => {
           top: `${y + 45}px`,
           zIndex: 210,
         }}
-        >
+      >
         {showWidth ? '>><<' : '<<>>'}
       </button>}
 
@@ -1236,11 +1292,7 @@ const Security = ({ security, x, y, rot }) => {
       </div>
     </div>
   )
-
-
 }
-
-
 
 
 ///
@@ -1558,6 +1610,7 @@ const InputBox = ({ onSendMessage }) => {
     socket4.emit('chat message', json); // Send message to backend
     formState.message = 'json';
 
+    window.dispatchEvent(new Event("reset-menus"));
     //console.log("x is ", x);
     //    setMessage('');
 
