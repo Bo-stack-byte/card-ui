@@ -17,6 +17,7 @@ import CardModal from './CardModal';
 import RecursiveMenu from './RecursiveMenu';
 import { motion } from 'framer-motion';
 
+// Visualizer v0.8.7   update meta stuff
 // Visualizer v0.8.6.1 fixed stupid stuff that stopped menus from persisting; also force menus to not persist
 // Visualizer v0.8.5   better trash; context menus in trash
 // Visualizer v0.8.4   handle some face down cards, updated landing page

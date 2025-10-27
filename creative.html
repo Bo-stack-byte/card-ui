@@ -38,11 +38,75 @@
   
 <h2>Creative Mode</h3>
 
-<p>Creative mode can absolutely create situations not yet handled by the current engine.</p>
+<p>Creative mode can absolutely create situations not yet handled by the current engine</p>
 
 Enter the board state and press "go" underneath. Make your own down below, or use a sample
 
 <h2>Sample Scenarios</h2>
+
+<h3>Myotismon Loop, Easy</h3>
+<form method=POST action=/game/set_up_board><textarea rows=15 cols=80 name=board>
+VERSION:2
+# A pretty straightforward example of Myotismon Loop.
+# Your opponent may or may not blast, it's random. Be ready for both.
+
+TRASH1:BT3-Malo BT3-Malo  P-MyotismonX EX10-Yukio BT16-072 EX10-Arukeni EX10-Mummy
+FIELD1:AruTamer,BT16-089 AruTamer2,BT16-089 AruMon,BT16-072 Mummy,EX10-Mummy Syak,EX8-Syak AYouth,EX1-Analog Yuck,EX10-Yukio
+HAND1:P-PurpleMem EX10-Mummy BT16-Mummy EX10-Malo BT8-Mist BT7-CallingFrom EX10-Myotis P-MyotismonX EX10-Malo
+DECK1:BT16-Ukko BT3-Malo EX10-Myotis ST6-DemiDevi EX1-066 EX10-Myotis EX8-Syak EX1-066 EX10-Myotis EX8-Syak P-123 EX8-Syak ST6-DemiDevi P-PurpleMemory EX10-047 BT16-Mummy EX10-Mummy ST6-DemiDevi BT8-MistMemory BT15-Myotis BT3-Malo BT16-Mummy EX10-Mummy BT3-Malo BT15-Myotis BT15-VenomMyotis BT3-Malo BT3-Malo ST6-DemiDevi P-PurpleMem EX10-Malo
+
+
+# opponent has 5 things in sec and they're all bad
+SECURITY2:BT10-101 BT10-101 BT10-101 BT10-101 BT10-101
+FIELD2:MKabu,ST20-MegaKabu Warp,ST20-Agu BlockerTamer,ST20-13 T2,ST20-12 Another,ST21-Gabu
+# opponent has level 4s and 5s in hand, as well as ACEs
+HAND2:ST20-WarGrey  ST21-Lilly ST21-Zudo
+DECK2:ST21-07 ST21-10 ST21-04 ST20-02
+
+GAME:P1 T5 MAIN 3
+</textarea> <br> <input type=submit value=go />
+            <select id="launch" name="launch">
+              <option value="1">Player 1</option>
+              <option value="2">Player 2</option>
+              <option value="3">Both</option>
+            </select>
+              <label for="bot2">Player 2 is a Bot:</label>
+              <input type="checkbox" id="bot2" name="bot2" value="1" CHECKED>
+</form>
+
+<h3>Myotismon Loop, Hard</h3>
+<form method=POST action=/game/set_up_board><textarea rows=15 cols=80 name=board>
+VERSION:2
+# (In progress, may not be able to win right now.)
+# You should still be able to wipe your opponent's board and destroy all their security on this turn. Can you do it?
+# Your opponent may or may not use OCU and may or may not blast. It's random and you should be ready for both.
+# Their security bombs are real but don't go off if trashed.
+# You only have 1 dual-tamer! Tere's none left no matter how hard you dig!
+
+TRASH1:BT3-Malo BT3-Malo  P-MyotismonX EX10-Yukio EX10-Mummy BT16-Mummy P-PurpleMemory BT16-072
+FIELD1:AruTamer,BT16-089 AruMon,BT16-072 Mummy,EX10-Mummy Syak,EX8-Syak AYouth,EX1-Analog Yuck,EX10-Yukio
+HAND1:P-PurpleMem EX10-Mummy BT16-Mummy EX10-Malo BT8-Mist BT7-CallingFrom EX10-Myotis P-MyotismonX EX10-Malo EX10-Arukeni
+DECK1:BT3-Malo EX10-Myotis ST6-DemiDevi EX1-066 EX10-Myotis EX8-Syak EX1-066 EX10-Myotis EX8-Syak P-123 EX8-Syak ST6-DemiDevi P-PurpleMemory EX10-047 BT16-Mummy EX10-Mummy ST6-DemiDevi BT8-MistMemory BT15-Myotis BT3-Malo BT16-Mummy EX10-Mummy BT3-Malo ST6-DemiDevi P-PurpleMem
+
+
+
+# opponent has 5 things in sec and they're all bad
+SECURITY2:BT10-101 BT10-101 BT10-101 BT10-101 BT10-101
+FIELD2:OCU,ST20-OurCourage MKabu,ST20-MegaKabu Warp,ST20-Agu BlockerTamer,ST20-13 T2,ST20-12 Another,ST21-Gabu Blocker,BT10-Cannondramon
+# opponent has level 4s and 5s in hand, as well as an ACE
+HAND2:ST20-WarGrey  ST21-Lilly ST21-Zudo ST21-MetalGaruru
+DECK2:ST21-07 ST21-10 ST21-04 ST20-02
+
+GAME:P1 T5 MAIN 4
+</textarea> <br> <input type=submit value=go />
+            <select id="launch" name="launch">
+              <option value="1">Player 1</option>
+              <option value="2">Player 2</option>
+              <option value="3">Both</option>
+            </select>
+              <label for="bot2">Player 2 is a Bot:</label>
+              <input type="checkbox" id="bot2" name="bot2" value="1" CHECKED>
+</form>
 
 
 
